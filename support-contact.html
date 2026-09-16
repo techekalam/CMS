@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Contact Support | Capstone Management System</title>
+
+    <link rel="stylesheet" href="../css/supervisor.css">
+</head>
+
+<body>
+
+    <header>
+
+        <div>
+            <h1>Capstone Management System</h1>
+        </div>
+
+        <div>
+            <span>Support</span>
+
+            <button type="button">
+                Logout
+            </button>
+        </div>
+
+    </header>
+
+    <aside>
+
+        <nav>
+
+            <h2>Support Center</h2>
+
+            <ul>
+
+                <li>
+                    <a href="support.html">
+                        🏠 Support Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="support-faq.html">
+                        ❓ FAQs
+                    </a>
+                </li>
+
+                <li>
+                    <a href="support-contact.html">
+                        ✉ Contact Support
+                    </a>
+                </li>
+
+                <li>
+                    <a href="support-tickets.html">
+                        🎫 My Support Tickets
+                    </a>
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </aside>
+
+
+    <main>
+
+        <section>
+
+            <header>
+
+                <h2>Contact Support</h2>
+
+                <p>
+                    Submit a support request and provide details
+                    about the issue you are experiencing.
+                </p>
+
+            </header>
+
+            <section>
+
+                <h3>Submit a Support Request</h3>
+
+                <form>
+
+                    <div>
+
+                        <label for="full-name">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="full-name"
+                            name="full-name"
+                            placeholder="Enter your full name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email address"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label for="user-role">
+                            User Role
+                        </label>
+
+                        <select
+                            id="user-role"
+                            name="user-role"
+                            required
+                        >
+
+                            <option value="">
+                                Select your role
+                            </option>
+
+                            <option value="student">
+                                Student
+                            </option>
+
+                            <option value="supervisor">
+                                Supervisor
+                            </option>
+
+                            <option value="admin">
+                                Administrator
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div>
+
+                        <label for="category">
+                            Issue Category
+                        </label>
+
+                        <select
+                            id="category"
+                            name="category"
+                            required
+                        >
+
+                            <option value="">
+                                Select category
+                            </option>
+
+                            <option value="account">
+                                Account & Login
+                            </option>
+
+                            <option value="project">
+                                Project Submission
+                            </option>
+
+                            <option value="assessment">
+                                Assessment
+                            </option>
+
+                            <option value="technical">
+                                Technical Issue
+                            </option>
+
+                            <option value="other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div style="width: 100%;">
+
+                        <label for="subject">
+                            Subject
+                        </label>
+
+                        <input
+                            type="text"
+                            id="subject"
+                            name="subject"
+                            placeholder="Enter the subject of your request"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div style="width: 100%;">
+
+                        <label for="message">
+                            Describe Your Issue
+                        </label>
+
+                        <textarea
+                            id="message"
+                            name="message"
+                            rows="7"
+                            placeholder="Describe the problem or question in detail..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                    <div style="width: 100%;">
+
+                        <label for="attachment">
+                            Attachment
+                        </label>
+
+                        <input
+                            type="file"
+                            id="attachment"
+                            name="attachment"
+                        >
+
+                        <small>
+                            Optional. Attach a relevant file or screenshot
+                            if it helps explain the issue.
+                        </small>
+
+                    </div>
+
+
+                    <button type="submit">
+                        Submit Request
+                    </button>
+
+                    <button type="reset">
+                        Clear Form
+                    </button>
+
+                </form>
+
+            </section>
+
+            <section>
+
+                <h3>Before Submitting a Request</h3>
+
+                <ul>
+
+                    <li>
+                        Check the Frequently Asked Questions section
+                        for a possible solution.
+                    </li>
+
+                    <li>
+                        Provide a clear description of the problem.
+                    </li>
+
+                    <li>
+                        Include relevant project or assessment
+                        information where necessary.
+                    </li>
+
+                    <li>
+                        Attach a screenshot or file if it helps
+                        explain the problem.
+                    </li>
+
+                </ul>
+
+            </section>
+
+            <section>
+
+                <h3>Support Categories</h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Category</th>
+
+                            <th>Examples</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                Account & Login
+                            </td>
+
+                            <td>
+                                Login problems, password issues,
+                                and account access.
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Project Submission
+                            </td>
+
+                            <td>
+                                Problems uploading or submitting
+                                project documents.
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Assessment
+                            </td>
+
+                            <td>
+                                Questions about assessment records,
+                                marks, or results.
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Technical Issue
+                            </td>
+
+                            <td>
+                                System errors, page problems,
+                                or other technical difficulties.
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Other
+                            </td>
+
+                            <td>
+                                Issues that do not belong to
+                                the categories listed above.
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+            <section>
+
+                <h3>Other Support Options</h3>
+
+                <p>
+                    You can also browse the FAQs or view your
+                    previously submitted support tickets.
+                </p>
+
+                <br>
+
+                <a href="support-faq.html">
+                    View FAQs
+                </a>
+
+                &nbsp;&nbsp;
+
+                <a href="support-tickets.html">
+                    View My Tickets
+                </a>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <footer>
+
+        <p>
+            &copy; 2026 Capstone Management System
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Assessments | Capstone Management System</title>
+
+    <link rel="stylesheet" href="supervisor.css">
+</head>
+
+<body>
+
+    <header>
+
+        <div>
+            <h1>Capstone Management System</h1>
+        </div>
+
+        <div>
+            <span>Supervisor</span>
+
+            <button type="button">
+                Logout
+            </button>
+        </div>
+
+    </header>
+
+    <aside>
+
+        <nav>
+
+            <h2>Supervisor Menu</h2>
+
+            <ul>
+
+                <li>
+                    <a href="supervisor-dashboard.html">
+                        🏠 Dashboard
+                    </a>
+                </li>
+
+                <li>
+                    <a href="supervisor-projects.html">
+                        📁 My Projects
+                    </a>
+                </li>
+
+                <li>
+                    <a href="supervisor-students.html">
+                        👥 My Students
+                    </a>
+                </li>
+
+                <li>
+                    <a href="assessment.html">
+                        📝 Assessments
+                    </a>
+                </li>
+
+                <li>
+                    <a href="assessment-history.html">
+                        📋 Assessment History
+                    </a>
+                </li>
+
+                <li>
+                    <a href="notifications.html">
+                        🔔 Notifications
+                    </a>
+                </li>
+
+                <li>
+                    <a href="profile.html">
+                        👤 Profile
+                    </a>
+                </li>
+
+                <li>
+                    <a href="change-password.html">
+                        ⚙ Change Password
+                    </a>
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </aside>
+
+    <main>
+
+        <section>
+
+            <header>
+
+                <h2>Assessments</h2>
+
+                <p>
+                    Record and manage assessments for your assigned students.
+                </p>
+
+            </header>
+
+            <section>
+
+                <h3>Assessment Overview</h3>
+
+                <div>
+
+                    <article>
+
+                        <h4>Total Assessments</h4>
+
+                        <p>0</p>
+
+                    </article>
+
+
+                    <article>
+
+                        <h4>Pending</h4>
+
+                        <p>0</p>
+
+                    </article>
+
+
+                    <article>
+
+                        <h4>Completed</h4>
+
+                        <p>0</p>
+
+                    </article>
+
+
+                    <article>
+
+                        <h4>Students Assessed</h4>
+
+                        <p>0</p>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+            <section>
+
+                <h3>Enter Assessment</h3>
+
+                <form>
+
+                    <div>
+
+                        <label for="student">
+                            Student
+                        </label>
+
+                        <select
+                            id="student"
+                            name="student"
+                            required
+                        >
+
+                            <option value="">
+                                Select Student
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div>
+
+                        <label for="project">
+                            Project
+                        </label>
+
+                        <select
+                            id="project"
+                            name="project"
+                            required
+                        >
+
+                            <option value="">
+                                Select Project
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div>
+
+                        <label for="assessment-type">
+                            Assessment Type
+                        </label>
+
+                        <select
+                            id="assessment-type"
+                            name="assessment-type"
+                            required
+                        >
+
+                            <option value="">
+                                Select Assessment Type
+                            </option>
+
+                            <option value="proposal">
+                                Proposal Assessment
+                            </option>
+
+                            <option value="chapter">
+                                Chapter Assessment
+                            </option>
+
+                            <option value="supervisor">
+                                Supervisor Assessment
+                            </option>
+
+                            <option value="presentation">
+                                Presentation / Defense
+                            </option>
+
+                            <option value="final">
+                                Final Project Assessment
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div>
+
+                        <label for="marks">
+                            Marks
+                        </label>
+
+                        <input
+                            type="number"
+                            id="marks"
+                            name="marks"
+                            min="0"
+                            max="100"
+                            placeholder="Enter marks"
+                            required
+                        >
+
+                    </div>
+
+                    <div style="width: 100%;">
+
+                        <label for="comments">
+                            Comments / Remarks
+                        </label>
+
+                        <textarea
+                            id="comments"
+                            name="comments"
+                            rows="6"
+                            placeholder="Enter assessment comments or remarks..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button type="submit">
+                        Save Assessment
+                    </button>
+
+                    <button type="reset">
+                        Clear
+                    </button>
+
+                </form>
+
+            </section>
+
+            <section>
+
+                <h3>Assessment Records</h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Student</th>
+
+                            <th>Student ID</th>
+
+                            <th>Project</th>
+
+                            <th>Assessment Type</th>
+
+                            <th>Marks</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                No assessment records available.
+                            </td>
+
+                            <td>-</td>
+
+                            <td>-</td>
+
+                            <td>-</td>
+
+                            <td>-</td>
+
+                            <td>
+                                Not Assessed
+                            </td>
+
+                            <td>
+
+                                <button
+                                    type="button"
+                                    disabled
+                                >
+                                    View
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+            <section>
+
+                <h3>Assessment Components</h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Assessment Component</th>
+
+                            <th>Description</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                Proposal Assessment
+                            </td>
+
+                            <td>
+                                Assessment of the project proposal.
+                            </td>
+
+                            <td>
+                                Pending
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Chapter Assessment
+                            </td>
+
+                            <td>
+                                Assessment of submitted project chapters.
+                            </td>
+
+                            <td>
+                                Pending
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Supervisor Assessment
+                            </td>
+
+                            <td>
+                                Supervisor evaluation of the student's
+                                project progress.
+                            </td>
+
+                            <td>
+                                Pending
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Presentation / Defense
+                            </td>
+
+                            <td>
+                                Assessment of the student's project
+                                presentation or defense.
+                            </td>
+
+                            <td>
+                                Pending
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                Final Project Assessment
+                            </td>
+
+                            <td>
+                                Final assessment of the completed project.
+                            </td>
+
+                            <td>
+                                Pending
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <footer>
+
+        <p>
+            &copy; 2026 Capstone Management System
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

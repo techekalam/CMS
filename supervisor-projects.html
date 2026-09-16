@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Supervisor Projects</title>
+  <link rel="stylesheet" href="supervisor.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Capstone Management System</h1>
+
+        <div>
+            <span>Supervisor</span>
+            <button type="button">Logout</button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li>
+                <a href="supervisor-dashboard.html">Dashboard</a>
+            </li>
+
+            <li>
+                <a href="supervisor-projects.html">My Projects</a>
+            </li>
+
+            <li>
+                <a href="supervisor-students.html">My Students</a>
+            </li>
+
+            <li>
+                <a href="assessment.html">Assessments</a>
+            </li>
+
+            <li>
+                <a href="assessment-history.html">Assessment History</a>
+            </li>
+
+            <li>
+                <a href="notifications.html">Notifications</a>
+            </li>
+
+            <li>
+                <a href="profile.html">Profile</a>
+            </li>
+
+            <li>
+                <a href="change-password.html">Change Password</a>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <section>
+            <h2>My Projects</h2>
+
+            <p>
+                View and monitor projects assigned to you.
+            </p>
+        </section>
+
+        <section>
+            <h2>Search and Filter Projects</h2>
+
+            <form>
+
+                <div>
+                    <label for="project-search">
+                        Search Project
+                    </label>
+
+                    <input
+                        type="search"
+                        id="project-search"
+                        name="project-search"
+                        placeholder="Enter project title"
+                    >
+                </div>
+
+                <div>
+                    <label for="project-status">
+                        Project Status
+                    </label>
+
+                    <select id="project-status" name="project-status">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+
+                <button type="submit">
+                    Search
+                </button>
+
+                <button type="reset">
+                    Clear
+                </button>
+
+            </form>
+        </section>
+
+        <section>
+            <h2>Assigned Projects</h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Project Title</th>
+                        <th>Group</th>
+                        <th>Number of Students</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>
+                            No assigned projects available.
+                        </td>
+
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+
+                        <td>
+                            <button type="button" disabled>
+                                View
+                            </button>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </section>
+
+        <section>
+            <h2>Project Information</h2>
+
+            <article>
+
+                <h3>Selected Project</h3>
+
+                <p>
+                    Select a project from the list above to view its
+                    information.
+                </p>
+
+                <dl>
+
+                    <dt>Project Title</dt>
+                    <dd>-</dd>
+
+                    <dt>Project Description</dt>
+                    <dd>-</dd>
+
+                    <dt>Project Category</dt>
+                    <dd>-</dd>
+
+                    <dt>Group</dt>
+                    <dd>-</dd>
+
+                    <dt>Project Status</dt>
+                    <dd>-</dd>
+
+                    <dt>Progress</dt>
+                    <dd>-</dd>
+
+                </dl>
+
+            </article>
+        </section>
+
+
+        <section>
+            <h2>Project Group Members</h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Student ID</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td colspan="3">
+                            No group members available.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>
+            &copy; 2026 Capstone Management System
+        </p>
+    </footer>
+
+</body>
+</html>
+```
