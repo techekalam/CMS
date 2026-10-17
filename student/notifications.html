@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications – Capstone Management System</title>
+    <meta name="description" content="View system notifications, deadlines, and supervisor feedback.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link active">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="tracker-card" style="max-width:760px;">
+            <div class="tracker-card-header" style="margin-bottom:20px;">
+                <div>
+                    <h2 class="tracker-title">System &amp; Academic Notifications</h2>
+                    <p class="tracker-sub">Updates regarding capstone deadlines, supervisor evaluations, and faculty notices</p>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <p style="font-size:13px;color:#64748b;margin:0;">No notifications yet.</p>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

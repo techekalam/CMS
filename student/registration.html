@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Proposal Registration – Capstone Management System</title>
+    <meta name="description" content="Submit your proposed capstone project topic and problem statement.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link active">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="tracker-card" style="max-width:680px;">
+            <div class="tracker-card-header" style="margin-bottom:24px;">
+                <div>
+                    <h2 class="tracker-title">Submit Capstone Project Proposal</h2>
+                    <p class="tracker-sub">Provide your project title, category domain, and problem description for departmental review</p>
+                </div>
+            </div>
+
+            <form id="projectRegForm">
+                <div style="margin-bottom:18px;">
+                    <label for="project-title" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Proposed Project Title</label>
+                    <input type="text" id="project-title" name="project-title" required class="form-control" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;" placeholder="e.g. AI-Powered Healthcare Appointment Scheduler">
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <label for="domain" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Project Category / Domain</label>
+                    <select id="domain" name="domain" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;" required>
+                        <option value="">Select Category</option>
+                        <option value="web">Web Application</option>
+                        <option value="mobile">Mobile Application</option>
+                        <option value="ai">Machine Learning / AI</option>
+                        <option value="cybersecurity">Networking &amp; Cybersecurity</option>
+                        <option value="cloud">Cloud Systems &amp; Data Engineering</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:22px;">
+                    <label for="description" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Problem Statement &amp; Scope</label>
+                    <textarea id="description" name="description" rows="5" required style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;" placeholder="Describe the problem, target users, objectives, and proposed technological solution..."></textarea>
+                </div>
+
+                <button type="submit" style="padding:12px 28px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(37,99,235,0.3);">Submit Project Registration</button>
+            </form>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <script>
+      document.documentElement.style.visibility='hidden';
+      function _stuCheck(){
+        var role=localStorage.getItem('cms_user_role');
+        var user=localStorage.getItem('cms_logged_user');
+        if(!role||!user||role!=='student'){window.location.replace('../login.html');}
+        else{document.documentElement.style.visibility='visible';}
+      }
+      _stuCheck();
+      window.addEventListener('pageshow',function(e){if(e.persisted)_stuCheck();});
+      window.addEventListener('unload',function(){});
+      function cmsLogout(){
+        ['cms_logged_user','cms_user_role','cms_user_name','cms_student_name','cms_student_id'].forEach(function(k){localStorage.removeItem(k);});
+        window.location.replace('../login.html');
+      }
+      document.addEventListener('DOMContentLoaded',function(){
+        document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
+          if(link.textContent.trim().toLowerCase().includes('logout')){
+            link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+          }
+        });
+      });
+    </script>
+    <title>Student Dashboard – Capstone Management System</title>
+    <meta name="description" content="Track your Capstone progress, view upcoming milestones, and manage your project.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout" onclick="localStorage.clear()">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link active">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link" onclick="localStorage.clear()">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+
+        <!-- Tracker Card -->
+        <div class="tracker-card">
+            <div class="tracker-card-header">
+                <div>
+                    <h2 class="tracker-title">Capstone Progress Tracker</h2>
+                    <p class="tracker-sub">Real-time academic completion metrics and milestone tracking</p>
+                </div>
+                <div class="tracker-status-badge">
+                    No Status Yet
+                </div>
+            </div>
+
+            <!-- Scenario Pills -->
+            <div class="scenario-row">
+                <div class="scenario-pill">
+                    <div>
+                        <div class="scenario-label">Group Scenario</div>
+                        <div class="scenario-value">Not Assigned</div>
+                    </div>
+                </div>
+                <div class="scenario-pill">
+                    <div>
+                        <div class="scenario-label">Assignment Scenario</div>
+                        <div class="scenario-value">Pending</div>
+                    </div>
+                </div>
+                <div class="scenario-pill">
+                    <div>
+                        <div class="scenario-label">Presentation / Completion</div>
+                        <div class="scenario-value">Not Started</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-left">
+                    <div class="big-percent tracker-pct-val">0%</div>
+                    <div class="overall-label">Overall Completion</div>
+                </div>
+                <div class="progress-right">
+                    <div class="progress-bar-header">
+                        <span>Milestone Progression</span>
+                        <span class="percent-blue">0% Completed</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill tracker-progress-fill" style="width:0%"></div>
+                    </div>
+                    <div class="milestone-steps">
+                        <div class="step-item">
+                            <div class="step-num">1. Team Roster <span class="step-pct">25%</span></div>
+                            <div class="step-status pending">Awaiting Supervisor Approval</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-num">2. Topic Title <span class="step-pct">50%</span></div>
+                            <div class="step-status pending">Awaiting Supervisor Approval</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-num">3. Proposal Deliverables <span class="step-pct">75%</span></div>
+                            <div class="step-status pending">Awaiting Supervisor Approval</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-num">4. Final Defense <span class="step-pct">100%</span></div>
+                            <div class="step-status pending">Awaiting Supervisor Approval</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Milestones Table -->
+        <div class="milestones-section">
+            <div class="milestones-header">
+                <div class="milestones-title">
+                    <h2 class="milestones-heading">Upcoming Milestones and Deadlines</h2>
+                </div>
+                <span class="academic-year">Academic Year 2026/2027</span>
+            </div>
+
+            <table class="milestone-table">
+                <thead>
+                    <tr>
+                        <th>Milestone Phase</th>
+                        <th>Target Deadline</th>
+                        <th>Weight</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Capstone Intake Registration</div>
+                            <div class="milestone-desc">Register student details and enroll in current academic semester cohort</div>
+                        </td>
+                        <td class="deadline-col">01 Aug 2026</td>
+                        <td class="weight-col">25%</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Approved Capstone Project Title</div>
+                            <div class="milestone-desc">Register project title and topic details with faculty department</div>
+                        </td>
+                        <td class="deadline-col">14 Aug 2026</td>
+                        <td class="weight-col">25%</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Project Topic, Proposal &amp; System Architecture Deliverables</div>
+                            <div class="milestone-desc">Submit problem statement, SRS, architecture diagrams, and prototype deliverables</div>
+                        </td>
+                        <td class="deadline-col">04 Sep 2026</td>
+                        <td class="weight-col">25%</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Project Presentation &amp; Defense</div>
+                            <div class="milestone-desc">Present capstone project before academic evaluation panel</div>
+                        </td>
+                        <td class="deadline-col">16 Oct 2026</td>
+                        <td class="weight-col">25%</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/js/supabase.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

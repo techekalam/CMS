@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register – Capstone Management System</title>
+    <meta name="description" content="Create your student account to access the Capstone Management System.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            min-height: 100vh;
+            background:
+                linear-gradient(155deg, rgba(10,25,47,0.94) 0%, rgba(10,25,47,0.80) 55%, rgba(26,58,92,0.88) 100%),
+                url('./assets/cavendish-background.jpeg') center/cover no-repeat fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAV ── */
+        .reg-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            padding: 0 28px;
+            background: #0a192f;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-family: Inter,'Segoe UI',Arial,sans-serif;
+        }
+        .reg-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+        .reg-nav-logo {
+            height: 40px; width: 40px;
+            border-radius: 50%;
+            object-fit: contain;
+            border: 2px solid #2563eb;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .reg-brand-name {
+            display: block;
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .reg-nav-brand > div > div {
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
+        .reg-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+        .reg-nav-btn {
+            padding: 9px 24px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 12px rgba(37,99,235,0.4);
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .reg-nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.55);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #fff;
+        }
+
+        /* ── MAIN WRAPPER ── */
+        .reg-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 20px;
+        }
+
+        /* ── CARD ── */
+        .reg-card {
+            width: 100%;
+            max-width: 540px;
+            background: rgba(255,255,255,0.97);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            overflow: hidden;
+            animation: slideUp 0.45s ease both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* card top accent bar */
+        .reg-card-top {
+            background: linear-gradient(135deg, #0a192f 0%, #1a3a5c 100%);
+            padding: 28px 36px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .reg-card-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .reg-card-heading {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            margin: 0 0 3px;
+        }
+        .reg-card-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        /* progress steps */
+        .reg-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 18px 36px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .reg-step-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+            transition: all 0.3s;
+        }
+        .reg-step-dot.done  { background: #2563eb; color: #fff; }
+        .reg-step-dot.active{ background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+        .reg-step-dot.idle  { background: #e5e7eb; color: #9ca3af; }
+        .reg-step-line {
+            flex: 1; height: 2px;
+            background: #e5e7eb;
+            max-width: 60px;
+        }
+        .reg-step-line.done { background: #2563eb; }
+        .reg-step-label {
+            font-size: 10px;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 5px;
+            display: block;
+        }
+        .reg-step-wrap { display: flex; flex-direction: column; align-items: center; }
+
+        /* form body */
+        .reg-form-body {
+            padding: 28px 36px 32px;
+        }
+
+        .reg-form-group {
+            margin-bottom: 18px;
+        }
+        .reg-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 7px;
+        }
+        .reg-label span.req { color: #2563eb; margin-left: 2px; }
+
+        .reg-input,
+        .reg-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            background: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .reg-input:focus,
+        .reg-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        .reg-input::placeholder { color: #9ca3af; }
+
+        /* select wrapper for custom arrow */
+        .reg-select-wrap {
+            position: relative;
+        }
+        .reg-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        /* two-column row */
+        .reg-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* password strength */
+        .pass-strength-bar {
+            height: 4px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            margin-top: 7px;
+            overflow: hidden;
+        }
+        .pass-strength-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+        .pass-strength-text {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        /* terms */
+        .reg-terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .reg-terms input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: #2563eb;
+            margin-top: 2px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .reg-terms label {
+            font-size: 12.5px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        .reg-terms a { color: #2563eb; text-decoration: none; }
+        .reg-terms a:hover { text-decoration: underline; }
+
+        /* submit button */
+        .reg-submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+            letter-spacing: 0.3px;
+        }
+        .reg-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37,99,235,0.5);
+        }
+        .reg-submit-btn:active { transform: translateY(0); }
+
+        /* divider */
+        .reg-divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 18px 0;
+        }
+        .reg-divider::before, .reg-divider::after {
+            content: ''; flex: 1; height: 1px; background: #e5e7eb;
+        }
+        .reg-divider span { font-size: 12px; color: #9ca3af; }
+
+        /* login link */
+        .reg-login-prompt {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 14px;
+        }
+        .reg-login-prompt a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .reg-login-prompt a:hover { text-decoration: underline; }
+
+        /* ── SUCCESS SCREEN ── */
+        .reg-success {
+            display: none;
+            padding: 48px 36px;
+            text-align: center;
+        }
+        .success-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #16a34a, #4ade80);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: #fff;
+            margin: 0 auto 20px;
+            animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.4); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .success-title { font-size: 22px; font-weight: 800; color: #1f2937; margin: 0 0 8px; }
+        .success-sub   { font-size: 14px; color: #6b7280; margin: 0 0 28px; line-height: 1.6; }
+        .success-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        }
+        .success-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(37,99,235,0.5); }
+
+        /* responsive */
+        @media (max-width: 560px) {
+            .reg-nav { padding: 12px 20px; }
+            .reg-card-top { padding: 22px 22px 18px; }
+            .reg-form-body { padding: 22px 22px 26px; }
+            .reg-row-2 { grid-template-columns: 1fr; }
+            .reg-steps { padding: 14px 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── NAV ── -->
+    <nav class="reg-nav">
+        <a href="./Index.html" class="reg-nav-brand">
+            <img src="./assets/logo.jpg" alt="CUU Logo" class="reg-nav-logo">
+            <div>
+                <span class="reg-brand-name">CAPSTONE MANAGEMENT SYSTEM</span>
+                <div style="font-size:11px;color:#94a3b8;font-weight:500;">Cavendish University Uganda</div>
+            </div>
+        </a>
+        <div class="reg-nav-right">
+            <a href="./login.html" class="reg-nav-btn">Sign In</a>
+            <a href="./Index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;font-weight:600;padding:6px 12px;">Home</a>
+        </div>
+    </nav>
+
+    <!-- ── MAIN ── -->
+    <div class="reg-wrapper">
+        <div class="reg-card" id="regCard">
+
+            <!-- Card Top -->
+            <div class="reg-card-top">
+                <div>
+                    <h1 class="reg-card-heading">Create Student Account</h1>
+                    <p class="reg-card-sub">Register for your academic capstone cohort</p>
+                </div>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="reg-steps">
+                <div class="reg-step-wrap">
+                    <div class="reg-step-dot active" id="step1-dot">1</div>
+                    <span class="reg-step-label">Account</span>
+                </div>
+                <div class="reg-step-line" id="line-1-2"></div>
+                <div class="reg-step-wrap">
+                    <div class="reg-step-dot idle" id="step2-dot">2</div>
+                    <span class="reg-step-label">Academic</span>
+                </div>
+                <div class="reg-step-line" id="line-2-3"></div>
+                <div class="reg-step-wrap">
+                    <div class="reg-step-dot idle" id="step3-dot">3</div>
+                    <span class="reg-step-label">Confirm</span>
+                </div>
+            </div>
+
+            <!-- FORM -->
+            <form class="reg-form-body" id="regForm" novalidate>
+
+                <!-- STEP 1 – Account Details -->
+                <div id="step1">
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="full-name">Full Name <span class="req">*</span></label>
+                        <input type="text" id="full-name" class="reg-input" placeholder="Enter your full name" autocomplete="name" required>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="email">Email Address <span class="req">*</span></label>
+                        <input type="email" id="email" class="reg-input" placeholder="you@student.ac.ug" autocomplete="email" required>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="password">Password <span class="req">*</span></label>
+                        <input type="password" id="password" class="reg-input" placeholder="Create a strong password" required>
+                        <div class="pass-strength-bar"><div class="pass-strength-fill" id="strengthFill"></div></div>
+                        <div class="pass-strength-text" id="strengthText">Enter a password</div>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="confirm-password">Confirm Password <span class="req">*</span></label>
+                        <input type="password" id="confirm-password" class="reg-input" placeholder="Re-enter your password" required>
+                    </div>
+
+                    <button type="button" class="reg-submit-btn" id="next1Btn" onclick="goToStep2()">
+                        Continue → Academic Details
+                    </button>
+                </div>
+
+                <!-- STEP 2 – Academic Details -->
+                <div id="step2" style="display:none;">
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="school-id">School ID / Student Number <span class="req">*</span></label>
+                        <input type="text" id="school-id" class="reg-input" placeholder="Enter your school ID" required>
+                    </div>
+
+                    <div class="reg-row-2">
+                        <div class="reg-form-group">
+                            <label class="reg-label" for="intake-year">Intake Year <span class="req">*</span></label>
+                            <div class="reg-select-wrap">
+                                <select id="intake-year" class="reg-select" required>
+                                    <option value="" disabled selected>Select year</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="reg-form-group">
+                            <label class="reg-label" for="study-year">Study Year <span class="req">*</span></label>
+                            <div class="reg-select-wrap">
+                                <select id="study-year" class="reg-select" required>
+                                    <option value="" disabled selected>Select year</option>
+                                    <option value="1">Year 1</option>
+                                    <option value="2">Year 2</option>
+                                    <option value="3">Year 3</option>
+                                    <option value="4">Year 4</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="mode-of-study">Mode of Study <span class="req">*</span></label>
+                        <div class="reg-select-wrap">
+                            <select id="mode-of-study" class="reg-select" required>
+                                <option value="" disabled selected>Select mode of study</option>
+                                <option value="full-time">Full Time</option>
+                                <option value="part-time">Part Time</option>
+                                <option value="distance">Distance Learning</option>
+                                <option value="evening">Evening</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="program">Programme <span class="req">*</span></label>
+                        <div class="reg-select-wrap">
+                            <select id="program" class="reg-select" required>
+                                <option value="" disabled selected>Select your programme</option>
+                                <option value="bcs">BSc Computer Science (BCS)</option>
+                                <option value="bit">Bachelor of Information Technology (BIT)</option>
+                                <option value="bdsai">BSc Data Science &amp; AI (BDSAI)</option>
+                                <option value="networking">Networking &amp; Cybersecurity</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reg-form-group">
+                        <label class="reg-label" for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="reg-input" placeholder="+256 700 000 000" autocomplete="tel">
+                    </div>
+
+                    <div style="display:flex;gap:10px;">
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep1()">← Back</button>
+                        <button type="button" class="reg-submit-btn" id="next2Btn" onclick="goToStep3()">Review &amp; Submit →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3 – Review & Confirm -->
+                <div id="step3" style="display:none;">
+                    <div style="background:#f9fafb;border-radius:12px;padding:18px;margin-bottom:18px;border:1px solid #e5e7eb;">
+                        <h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.5px;">Review Your Details</h3>
+                        <div id="reviewContent" style="display:grid;gap:10px;"></div>
+                    </div>
+
+                    <div class="reg-terms">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I confirm that all information provided is accurate.
+                        </label>
+                    </div>
+
+                    <div style="display:flex;gap:10px;">
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep2Back()">← Edit</button>
+                        <button type="submit" class="reg-submit-btn" id="submitBtn">Complete Registration</button>
+                    </div>
+
+                    <div class="reg-divider"><span>or</span></div>
+                    <div class="reg-login-prompt">Already registered? <a href="./login.html">Sign in here</a></div>
+                </div>
+
+            </form>
+
+            <!-- SUCCESS STATE -->
+            <div class="reg-success" id="regSuccess">
+                <div class="success-icon">•</div>
+                <h2 class="success-title">Account Created!</h2>
+                <p class="success-sub">Welcome to the Capstone Management System,<br><strong id="successName"></strong>.<br>Your student record has been initialized.<span id="successGroup"></span> You can now sign in.</p>
+                <a href="./login.html" class="success-btn">Go to Login →</a>
+            </div>
+
+        </div><!-- /reg-card -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./assets/js/supabase.js"></script>
+    <script>
+        // ── PASSWORD STRENGTH ──
+        const pwInput = document.getElementById('password');
+        const fill    = document.getElementById('strengthFill');
+        const txt     = document.getElementById('strengthText');
+
+        pwInput.addEventListener('input', () => {
+            const v = pwInput.value;
+            let score = 0;
+            if (v.length >= 8)  score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+            const levels = [
+                { w:'0%',   c:'#e5e7eb', t:'Enter a password' },
+                { w:'25%',  c:'#ef4444', t:'Weak' },
+                { w:'50%',  c:'#3b82f6', t:'Fair' },
+                { w:'75%',  c:'#3b82f6', t:'Good' },
+                { w:'100%', c:'#16a34a', t:'Strong' },
+            ];
+            fill.style.width      = levels[score].w;
+            fill.style.background = levels[score].c;
+            txt.textContent       = levels[score].t;
+            txt.style.color       = levels[score].c;
+        });
+
+        // ── STEP NAVIGATION ──
+        function setStep(n) {
+            [1,2,3].forEach(i => {
+                document.getElementById('step'+i).style.display = (i===n) ? '' : 'none';
+                const dot = document.getElementById('step'+i+'-dot');
+                dot.className = 'reg-step-dot ' + (i < n ? 'done' : i === n ? 'active' : 'idle');
+                dot.textContent = i;
+            });
+            document.getElementById('line-1-2').className = 'reg-step-line' + (n > 1 ? ' done' : '');
+            document.getElementById('line-2-3').className = 'reg-step-line' + (n > 2 ? ' done' : '');
+        }
+
+        function goToStep2() {
+            const name = document.getElementById('full-name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pw    = document.getElementById('password').value;
+            const cpw   = document.getElementById('confirm-password').value;
+            if (!name)  { alert('Please enter your full name.'); return; }
+            if (!email) { alert('Please enter your email address.'); return; }
+            if (pw.length < 6) { alert('Password must be at least 6 characters.'); return; }
+            if (pw !== cpw)    { alert('Passwords do not match.'); return; }
+            setStep(2);
+        }
+
+        function goToStep1() { setStep(1); }
+
+        function goToStep3() {
+            const sid  = document.getElementById('school-id').value.trim();
+            const mode = document.getElementById('mode-of-study').value;
+            const prog = document.getElementById('program').value;
+            if (!sid)  { alert('Please enter your School ID.'); return; }
+            if (!mode) { alert('Please select your mode of study.'); return; }
+            if (!prog) { alert('Please select your programme.'); return; }
+
+            // Build review
+            const programLabels = {
+                'bcs':          'BSc Computer Science (BCS)',
+                'bit':          'Bachelor of Information Technology (BIT)',
+                'bdsai':        'BSc Data Science & AI (BDSAI)',
+                'networking':   'Networking & Cybersecurity'
+            };
+            const modeLabels = {
+                'full-time': 'Full Time',
+                'part-time': 'Part Time',
+                'distance':  'Distance Learning',
+                'evening':   'Evening'
+            };
+            const syEl = document.getElementById('study-year');
+            const iyEl = document.getElementById('intake-year');
+
+            const rows = [
+                ['Full Name',     document.getElementById('full-name').value],
+                ['Email',         document.getElementById('email').value],
+                ['School ID',     sid],
+                ['Intake Year',   iyEl.value || '—'],
+                ['Study Year',    syEl.options[syEl.selectedIndex]?.text || '—'],
+                ['Mode of Study', modeLabels[mode] || mode],
+                ['Programme',     programLabels[prog] || prog],
+                ['Phone',         document.getElementById('phone').value || '—'],
+            ];
+
+            document.getElementById('reviewContent').innerHTML = rows.map(([k,v]) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;border-bottom:1px solid #f0f2f5;padding-bottom:8px;">
+                    <span style="color:#6b7280;font-weight:500;">${k}</span>
+                    <span style="color:#1f2937;font-weight:600;text-align:right;max-width:60%;">${escHtml(v)}</span>
+                </div>
+            `).join('');
+
+            setStep(3);
+        }
+
+        function goToStep2Back() { setStep(2); }
+
+        // ── FORM SUBMIT ──
+        document.getElementById('regForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!document.getElementById('terms').checked) {
+                alert('Please agree to the Terms of Service to continue.');
+                return;
+            }
+            const fullName = document.getElementById('full-name').value.trim();
+            const email    = document.getElementById('email').value.trim();
+            const sid      = document.getElementById('school-id').value.trim();
+            const prog     = document.getElementById('program').value;
+            const phone    = document.getElementById('phone').value.trim();
+
+            // Save the student to the database. The system then places them
+            // into a group automatically (see database/schema.sql, section 14).
+            const COURSE_CODES = { bcs: 'BSCS', bit: 'BSIT', bdsai: 'BDSAI', networking: 'NETSEC' };
+            const sb = window.CMS_SB && window.CMS_SB.client();
+            if (!sb) { alert('Could not reach the server. Please check your connection and try again.'); return; }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            const { error: saveErr } = await sb.from('profiles').insert({
+                email:      email.toLowerCase(),
+                name:       fullName,
+                role:       'student',
+                student_id: sid,
+                programme:  COURSE_CODES[prog] || prog,
+                phone:      phone || null
+            });
+            if (saveErr) {
+                submitBtn.disabled = false;
+                alert(saveErr.code === '23505'
+                    ? 'An account with this email already exists. Please sign in instead.'
+                    : 'Registration could not be completed. Please try again.');
+                return;
+            }
+
+            // Show which group the system placed the student in.
+            try {
+                const { data: st } = await sb.from('student_status')
+                    .select('groups(group_number)').eq('student_id', sid).maybeSingle();
+                const gn = st && st.groups && st.groups.group_number;
+                if (gn) document.getElementById('successGroup').textContent =
+                    ' You have been placed in group ' + gn + '.';
+            } catch (err) { /* group is still assigned; it will show on the My Group page */ }
+
+            localStorage.setItem('cms_student_name', fullName);
+            localStorage.setItem('cms_student_id', sid);
+            localStorage.setItem('cms_student_prog', prog);
+            localStorage.setItem('cms_student_phone', phone);
+            localStorage.setItem('cms_logged_user', email);
+            localStorage.setItem('cms_user_role', 'student');
+
+            document.getElementById('successName').textContent = fullName;
+            document.getElementById('regForm').style.display    = 'none';
+            document.getElementById('regSuccess').style.display = 'block';
+            document.getElementById('regCard').querySelector('.reg-card-top').style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
+            document.querySelector('.reg-steps').style.display = 'none';
+        });
+
+        function escHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+    </script>
+
+</body>
+</html>

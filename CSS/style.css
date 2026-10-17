@@ -19,11 +19,16 @@ html {
 
 body {
     font-family: Arial, Helvetica, sans-serif;
-    background-image:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../assets/cavendish-background.jpeg);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+   background:#f4f7fb;
+    height:100% ;
+    margin:0;
+    display:flex;
+    flex-direction: column;
+    min-height:100vh;
+}
+main {
+    flex:1;
+    
 }
 a {
     text-decoration: none;
@@ -44,6 +49,17 @@ button {
 img {
     max-width: 100%;
     display: block;
+}
+.contentcard {
+    background-color:rgba(10, 25, 47, 0.85);
+    max-width:700px;
+    margin:30px auto;
+    padding:50px;
+    border-radius: 12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+    height:400px;
+
 }
 
 
@@ -74,7 +90,7 @@ img {
     --shadow:
         0 4px 15px rgba(0, 0, 0, 0.08);
 
-    --radius: 10px;
+    --radius: 50px;
 }
 
 
@@ -109,6 +125,8 @@ h6 {
 
 h1 {
     font-size: 32px;
+    color:white;
+    text-align:left;
 }
 
 h2 {
@@ -118,12 +136,58 @@ h2 {
 h3 {
     font-size: 20px;
 }
+.cms{
+
+    text-align:left;
+    padding-top:0.5px ;
+    padding-bottom:8px ;
+    padding-left:210px ;
+    margin:0
+}
 
 p {
     color: var(--text-light);
 }
+.features-section {
+    padding:60px 20px;
+    text-align:center;
+}
+.features-section h2 {
+    margin-bottom:40px;
+    font-size:32px;
+}
+.features-container {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+    max-width:1100px;
+    margin:0 auto;
+}
+.feature-card {
+    background-color:rgba(10, 25, 47, 0.85) ;
+    color:white;
+    padding:30px 20px;
+    border-radius:15px;
+    box-shadow:0 4px 12px rgba(0, 0, 0, 0.5);
+    text-align: left;
+    transition:transform 0.2s ease,box-shadow 0.2s ease ;
+    
 
-
+}
+.feature-card:hover {
+    transform:translateY(-5px);
+    box-shadow:0 8px 20px rgba(0, 0, 0, 0.3);
+}
+.feature-card h3 {
+    margin-bottom:12px ;
+    font-size: 20px;
+    color:white;
+}
+.feature-card p {
+    font-size: 15px;
+    line-height:1.5;
+    color: #d0d0d0;
+}
 /* =========================================================
    5. LOGIN PAGE
    ========================================================= */
@@ -144,28 +208,43 @@ p {
 }
 
 .logincard {
-    background-color: var(--white);
-    padding: 40px;
-    border-radius: 15px;
+    background-color:rgba(10, 25, 47, 0.85);
+    padding: 100px;
+    border-radius: 20px;
     box-shadow: var(--shadow);
+    width:100%;
+    max-width:900px;
+    align-items: flex-start;
+    
+    
 }
-.welcome message {
-    color:blue;
+.centerwrapper {
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    
+}
+.welcomemessage {
+    color:white;
 }
 
 
 .login-header {
-    text-align: center;
+    text-align:left;
     margin-bottom: 30px;
 }
 
 .login-header h1 {
     margin-bottom: 8px;
-    color: var(--primary);
+    color:white;
+
+
 }
 
 .login-header p {
     font-size: 14px;
+    color:white;
 }
 
 .login-logo {
@@ -174,6 +253,145 @@ p {
     margin: 0 auto 15px;
     border-radius: 50%;
     object-fit: cover;
+}
+#loginbutton {
+    display:block;
+    margin:0 auto 30px auto;
+    padding:12px 30px;
+    background-color:ffd700 ;
+    border:none;
+    border-radius:8px ;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+#loginbutton a {
+    text-decoration:none;
+    color:#0a192f;
+
+}
+.navbar {
+    display:flex;
+    justify-content:space-between;
+    background-color: #0a192f;
+    align-items:center;
+    padding:10px 20px;
+    color:white;
+    width:100%;
+    box-sizing:border-box;
+}
+.nav-left {
+    display:flex;
+    align-items:center;
+    gap:30px;
+}
+header {
+    position:sticky;
+    top:0;
+    z-index:100;
+    background-color:rgba(10, 25, 47) ;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:15px
+    padding:0 20px;
+}
+.profilecard{
+    background-color:rgba(10, 25, 47) ;
+    max-width:600px;
+    padding:30px;
+    border-radius:var(--radius) ;
+    box-shadow:var(--shadow) ;
+    margin-left:0 auto;
+    width:100%;
+    box-sizing:border-box ;
+    align-self:flex-start;
+    
+}
+.profilecard h2{
+    margin-bottom:20px ;
+    color:white;
+
+}
+profilecard input {
+    border-radius:10px ;
+
+}
+.form-row {
+    margin-top: 15px;
+}
+.form-row label {
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+    color:white;
+
+}
+form-row input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:10px;
+
+
+}
+.profilecard form-row input {
+    border-radius:20px ;
+}
+.profilecard button {
+    padding: 10px 20px;
+    
+    background-color:blue;
+    color:black;
+    border:none;
+    margin-top:50px ;
+    cursor:pointer;
+    border-radius:20px ;
+}
+
+aside {
+    width:220px;
+    background-color: rgba(10, 25, 47);
+    flex-shrink:0;
+    padding:20px;
+    
+    
+    
+    
+
+}
+
+aside nav ul {
+    list-style:none;
+    padding:0;
+    margin:0;
+
+}
+
+aside nav ul li {
+    margin-bottom: 10px;
+}
+aside nav ul li a:hover {
+    background-color:rgba(255, 255, 255, 0.1) ;
+
+}
+aside nav ul li a {
+    color:white;
+    text-decoration:none;
+    display:block;
+    padding:10px;
+    border-radius:6px;
+
+}
+main {
+    flex:1;
+    padding:30px;
+    overflow-x: auto;
+    
+}
+.pagewrapper {
+    display:flex;
+    flex:1;
 }
 
 
@@ -603,8 +821,6 @@ select.form-control {
 
     border: 1px solid var(--border);
 
-    border-radius: var(--radius);
-
     box-shadow: var(--shadow);
 
     padding: 25px;
@@ -702,6 +918,17 @@ select.form-control {
 .data-table {
     width: 100%;
     border-collapse: collapse;
+    max-width:900px ;
+    margin:30px auto;
+    background-color:rgba(255, 255, 255, 0.95) ;
+    border-radius:10px ;
+    overflow:hidden;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    font-size:16px;
+}
+thead{
+    background-color:white ;
+    color:white;
 }
 
 .data-table th,
@@ -727,6 +954,9 @@ select.form-control {
     background-color: #f8fafc;
 }
 
+tbody tr:nth-child(even){
+    background-color:#fafafa ;
+}
 
 /* =========================================================
    17. STATUS BADGES
@@ -1172,7 +1402,7 @@ select.form-control {
 
     font-size: 13px;
 
-    color: var(--text-light);
+    color:blue;
 }
 
 

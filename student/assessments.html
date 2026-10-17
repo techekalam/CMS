@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Assessments – Capstone Management System</title>
+    <meta name="description" content="View your capstone assessment marks, grading rubric, and defense scores.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link active">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+
+        <div class="page-title-row">
+            <div>
+                <h2>Capstone Assessments &amp; Evaluation Marks</h2>
+                <p>Continuous evaluation breakdown, component weightings, and defense grading</p>
+            </div>
+            <span class="ms-badge ms-info">Academic Year 2026/2027</span>
+        </div>
+
+        <!-- Grade Summary Cards -->
+        <div class="scenario-row" style="margin-bottom:24px;">
+            <div class="scenario-pill">
+                <div>
+                    <div class="scenario-label">Cumulative Mark</div>
+                    <div class="scenario-value" style="font-size:20px;color:#2563eb;">Pending Final Defense</div>
+                </div>
+            </div>
+            <div class="scenario-pill">
+                <div>
+                    <div class="scenario-label">Evaluation Panel</div>
+                    <div class="scenario-value">Not Assigned</div>
+                </div>
+            </div>
+            <div class="scenario-pill">
+                <div>
+                    <div class="scenario-label">Assessment Clearance</div>
+                    <div class="scenario-value">Pending</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rubric Table -->
+        <div class="milestones-section">
+            <div class="milestones-header">
+                <div class="milestones-title">
+                    <h2 class="milestones-heading">Assessment Scheme &amp; Grading Weights</h2>
+                </div>
+                <span class="academic-year">Total Scheme: 100%</span>
+            </div>
+
+            <table class="milestone-table">
+                <thead>
+                    <tr>
+                        <th>Assessment Component</th>
+                        <th>Assessor</th>
+                        <th>Weight</th>
+                        <th>Target Period</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Phase 1: Project Proposal &amp; Problem Analysis</div>
+                            <div class="milestone-desc">Literature review, methodology definition, and requirements definition</div>
+                        </td>
+                        <td>Academic Supervisor</td>
+                        <td class="weight-col">20%</td>
+                        <td>Semester Week 4</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Phase 2: System Architecture &amp; Methodology</div>
+                            <div class="milestone-desc">System diagrams, schema models, and technical requirements review</div>
+                        </td>
+                        <td>Academic Supervisor</td>
+                        <td class="weight-col">20%</td>
+                        <td>Semester Week 8</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Phase 3: Prototype Implementation &amp; Demo</div>
+                            <div class="milestone-desc">Functional software demonstration, testing verification, and repository review</div>
+                        </td>
+                        <td>Department Assessor</td>
+                        <td class="weight-col">20%</td>
+                        <td>Semester Week 12</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Phase 4: Final Capstone Dissertation</div>
+                            <div class="milestone-desc">Complete project report, documentation chapters, and recommendations</div>
+                        </td>
+                        <td>Internal Faculty Reader</td>
+                        <td class="weight-col">20%</td>
+                        <td>Semester Week 14</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="milestone-name">Phase 5: Final Oral Defense &amp; Examination</div>
+                            <div class="milestone-desc">Oral panel examination, project defense, and viva question session</div>
+                        </td>
+                        <td>Capstone Evaluation Panel</td>
+                        <td class="weight-col">20%</td>
+                        <td>Final Exam Week</td>
+                        <td><span class="ms-badge ms-pending">Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

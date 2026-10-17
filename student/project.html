@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project – Capstone Management System</title>
+    <meta name="description" content="View project approval status and upload deliverables.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link active">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="tracker-card" style="max-width:680px;margin-bottom:24px;">
+            <div class="tracker-card-header" style="margin-bottom:18px;">
+                <div>
+                    <h2 class="tracker-title">Project Status &amp; Overview</h2>
+                    <p class="tracker-sub">Current capstone registration status and project specifications</p>
+                </div>
+            </div>
+            
+            <div style="background:#f8fafc;padding:20px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;" id="projectDetailsCard">
+                <p style="font-size:14px;color:#64748b;margin:0 0 10px;"><strong>Project Title:</strong> <span id="displayProjTitle" style="color:#1e293b;font-weight:600;">Not Submitted</span></p>
+                <p style="font-size:14px;color:#64748b;margin:0 0 10px;"><strong>Approval Status:</strong> <span id="displayProjStatus" style="display:inline-block;padding:3px 10px;background:#f1f5f9;color:#64748b;border-radius:12px;font-size:12px;font-weight:600;">Not Submitted</span></p>
+                <p style="font-size:14px;color:#64748b;margin:0;"><strong>Domain:</strong> <span id="displayProjCat" style="color:#1e293b;font-weight:600;">—</span></p>
+            </div>
+
+            <div style="border-top:1px solid #e5e7eb;padding-top:20px;">
+                <h3 style="font-size:16px;font-weight:700;color:#1f2937;margin:0 0 16px;">Submit Project Artifacts &amp; Deliverables</h3>
+                <form id="docUploadForm">
+                    <div style="margin-bottom:18px;">
+                        <label for="artifact-type" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Document Deliverable Type</label>
+                        <select id="artifact-type" name="artifact-type" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;">
+                            <option value="proposal">Proposal Document</option>
+                            <option value="srs">Software Requirements Specification (SRS)</option>
+                            <option value="design">System Architecture &amp; Design Model</option>
+                            <option value="final-report">Final Capstone Dissertation</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom:22px;">
+                        <label for="file-upload" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Upload File (.pdf, .docx, .zip)</label>
+                        <input type="file" id="file-upload" name="file-upload" required style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;">
+                    </div>
+
+                    <button type="submit" style="padding:12px 28px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(37,99,235,0.3);">Upload Deliverable</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

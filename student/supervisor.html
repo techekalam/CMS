@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Supervisor – Capstone Management System</title>
+    <meta name="description" content="View assigned supervisor contact information and office hours.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link active">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="tracker-card" style="max-width:680px;">
+            <div class="tracker-card-header" style="margin-bottom:20px;">
+                <div>
+                    <h2 class="tracker-title">Assigned Academic Supervisor</h2>
+                    <p class="tracker-sub">Supervisor contact information, departmental affiliation, and consultation schedule</p>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;padding:24px;border-radius:12px;border:1px solid #e2e8f0;">
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+                    <div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">—</div>
+                    <div>
+                        <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 4px;">Not Assigned</h3>
+                        <span style="font-size:12.5px;color:#2563eb;font-weight:600;">—</span>
+                    </div>
+                </div>
+                
+                <div style="text-align:left;background:#fff;padding:18px;border-radius:8px;border:1px solid #e5e7eb;font-size:13.5px;color:#475569;">
+                    <p style="margin:0 0 10px;"><strong>Department:</strong> —</p>
+                    <p style="margin:0 0 10px;"><strong>Institutional Email:</strong> —</p>
+                    <p style="margin:0 0 10px;"><strong>Office Location:</strong> —</p>
+                    <p style="margin:0 0 10px;"><strong>Consultation Hours:</strong> —</p>
+                    <p style="margin:0;"><strong>Assigned Group:</strong> —</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile – Capstone Management System</title>
+    <meta name="description" content="Update your personal details and academic record.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body class="dash-body">
+
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Student Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name">Student Account</span>
+                <span class="dash-user-id"></span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+
+<div class="dash-layout">
+    <aside class="dash-sidebar">
+        <nav>
+            <ul class="dash-nav-list">
+                <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
+                <li><a href="profile.html" class="dash-nav-link active">Profile</a></li>
+                <li><a href="registration.html" class="dash-nav-link">Registration</a></li>
+                <li><a href="project.html" class="dash-nav-link">My Project</a></li>
+                <li><a href="group.html" class="dash-nav-link">My Group</a></li>
+                <li><a href="supervisor.html" class="dash-nav-link">My Supervisor</a></li>
+                <li><a href="assessments.html" class="dash-nav-link">Assessments</a></li>
+                <li><a href="notifications.html" class="dash-nav-link">Notifications</a></li>
+                <li class="dash-nav-logout"><a href="../login.html" class="dash-nav-link logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dash-main">
+        <div class="tracker-card" style="max-width:680px;">
+            <div class="tracker-card-header" style="margin-bottom:24px;">
+                <div>
+                    <h2 class="tracker-title">Personal &amp; Academic Details</h2>
+                    <p class="tracker-sub">Update your account information, registration number, and contact records</p>
+                </div>
+            </div>
+            
+            <form id="profileForm">
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Full Name</label>
+                    <input type="text" id="full-name" name="full-name" class="form-control" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Student Registration ID</label>
+                    <input type="text" id="student-id" name="student-id" class="form-control" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;" placeholder="e.g. 24/BCS/001" required>
+                </div>
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Academic Programme</label>
+                    <select id="program" name="program" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;">
+                        <option value="">Select Programme</option>
+                        <option value="bcs">BSc Computer Science (BCS)</option>
+                        <option value="bit">Bachelor of Information Technology (BIT)</option>
+                        <option value="bdsai">BSc Data Science &amp; AI (BDSAI)</option>
+                        <option value="netsec">Networking &amp; Cybersecurity</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:22px;">
+                    <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;" placeholder="+256 700 000 000">
+                </div>
+                <button type="submit" style="padding:12px 28px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(37,99,235,0.3);">Save Profile Changes</button>
+            </form>
+        </div>
+    </main>
+</div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

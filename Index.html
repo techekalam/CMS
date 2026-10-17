@@ -3,70 +3,992 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-     <link rel="stylesheet" href="CSS/style.css">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <script>
+      // If already logged in, skip the login page and go to the right dashboard
+      (function(){
+        var role = localStorage.getItem('cms_user_role');
+        var user = localStorage.getItem('cms_logged_user');
+        if (role && user) {
+          var targets = {
+            admin:       'admin/admin-dashboard.html',
+            supervisor:  'supervisor/dashboard.html',
+            coordinator: 'coordinator/dashboard.html',
+            student:     'student/studentdashboard.html'
+          };
+          var dest = targets[role];
+          if (dest) window.location.replace(dest);
+        }
+      })();
+    </script>
+    <title>Sign In – Capstone Management System</title>
+    <meta name="description" content="Access your Cavendish University Uganda Capstone Management System workspace.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(155deg, rgba(10,25,47,0.92) 0%, rgba(10,25,47,0.80) 55%, rgba(26,58,92,0.88) 100%),
+                        url('assets/cavendish-background.jpeg') center/cover no-repeat fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #1e293b;
+        }
+
+        /* ── NAVBAR ── */
+        .login-nav {
+            background: #0a192f;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+            height: 64px;
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            font-family: Inter,'Segoe UI',Arial,sans-serif;
+        }
+        .login-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+        .login-nav-logo {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            object-fit: contain;
+            border: 2px solid #2563eb;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .login-brand-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .login-brand-sub {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
+        .login-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+        .btn-nav-action {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-nav-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #fff;
+        }
+
+        /* ── MAIN WRAPPER ── */
+        .login-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* ── LOGIN CARD ── */
+        .login-card {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card-top {
+            background: linear-gradient(135deg, #0a192f 0%, #172a45 100%);
+            padding: 32px 32px 24px;
+            text-align: center;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .login-card-logo {
+            width: 64px;
+            height: 64px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 3px;
+            margin: 0 auto 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2563eb;
+        }
+        .login-card-logo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+        .login-card-heading {
+            font-size: 19px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .login-card-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        /* ── BODY ── */
+        .login-body {
+            padding: 32px;
+        }
+
+        /* ── STEPS ── */
+        .step { display: none; }
+        .step.active { display: block; }
+
+        /* ── STEP INDICATOR ── */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .step-dot.active {
+            background: #2563eb;
+            width: 24px;
+            border-radius: 4px;
+        }
+        .step-dot.done {
+            background: #22c55e;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 22px;
+            line-height: 1.55;
+        }
+
+        /* ── FIELD ── */
+        .login-field-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .login-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .login-input-wrap {
+            position: relative;
+        }
+        .login-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #0f172a;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .login-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+
+        /* ── OTP INPUT ── */
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+        .otp-digit {
+            width: 48px;
+            height: 56px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+        .otp-digit:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+            background: #fff;
+        }
+        .otp-digit.filled {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            width: 100%;
+            padding: 13px 18px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+        }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .btn-ghost {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .btn-ghost:hover { color: #1d4ed8; }
+        .btn-ghost:disabled { color: #94a3b8; cursor: not-allowed; text-decoration: none; }
+
+        /* ── RESEND AREA ── */
+        .resend-area {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .resend-timer {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* ── ALERT / MSG ── */
+        .login-msg {
+            display: none;
+            margin-top: 14px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        /* ── INFO BADGE ── */
+        .info-badge {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 11px 14px;
+            margin-top: 18px;
+            font-size: 12px;
+            color: #475569;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.45;
+        }
+        .info-tag {
+            background: rgba(37,99,235,0.12);
+            color: #2563eb;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ── EMAIL DISPLAY ── */
+        .email-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1d4ed8;
+            margin-bottom: 20px;
+        }
+
+        /* ── FOOTER ── */
+        .login-footer-prompt {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .login-footer-prompt a {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .login-footer-prompt a:hover { text-decoration: underline; }
+
+        /* ── SUCCESS ── */
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.4s ease both;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        /* ── SPINNER ── */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        .spinner.visible { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 480px) {
+            .login-nav { padding: 12px 20px; }
+            .login-card-top { padding: 24px 20px; }
+            .login-body { padding: 20px; }
+            .otp-digit { width: 42px; height: 50px; font-size: 20px; }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <h2>CAPSTONE MANAGEMENT SYSTEM</h2>
-            <div class="nav-links">
-                <a href="index.html">HOME</a>
-                <a href="loginpage/login.html">LOGIN</a>
 
-            </div>
-        </nav>
-    </header>
-    <section class="hero-section">
-        <div class="hero-section">
-            <h1>CAPSTONE MANAGEMENT SYSTEM</h1>
-            <P>A centralized platform for managing university capstone projects,students,supervisors,assements and project progress</P>
+<nav class="login-nav">
+    <a href="./Index.html" class="login-nav-left">
+        <img src="assets/logo.jpg" alt="CUU Logo" class="login-nav-logo">
+        <div>
+            <div class="login-brand-title">CAPSTONE MANAGEMENT SYSTEM</div>
+            <div class="login-brand-sub">Cavendish University Uganda</div>
         </div>
-    </section>
-    <section class="features-section">
-        <h2>System Features</h2>
-      <div class="features-container">
-<div class="feature-card"> 
-    <h3>Project Management</h3> 
-    <p> Register, manage, and track capstone projects throughout their lifecycle. </p>
- </div> 
-    <div class="feature-card">
-         <h3>Supervisor Assignment</h3> 
-         <p> Manage supervisor assignments and monitor student projects. </p> 
+    </a>
+    <div class="login-nav-actions">
+        <a href="./register.html" class="btn-nav-action">Register</a>
+        <a href="./Index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;font-weight:600;padding:6px 12px;">Home</a>
+    </div>
+</nav>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-card-top">
+            <div class="login-card-logo">
+                <img src="assets/logo.jpg" alt="CUU Emblem">
+            </div>
+            <h1 class="login-card-heading">CAPSTONE MANAGEMENT SYSTEM</h1>
+            <p class="login-card-sub">Cavendish University Uganda</p>
         </div>
-          <div class="feature-card"> 
-            <h3>Assessment</h3>
-             <p> Record and monitor student assessments and project marks. </p> 
+
+        <div class="login-body">
+
+            <!-- Step indicators -->
+            <div class="step-indicator">
+                <div class="step-dot active" id="dot1"></div>
+                <div class="step-dot" id="dot2"></div>
             </div>
-              <div class="feature-card"> 
-                <h3>Progress Monitoring</h3> 
-                <p> Track the progress of capstone projects from registration to completion. </p> 
+
+            <!-- ── STEP 1: Enter Email ── -->
+            <div class="step active" id="step1">
+                <p class="step-title">Welcome back</p>
+                <p class="step-desc">Enter your email address to continue.</p>
+
+                <div class="login-field-group">
+                    <label class="login-label" for="emailInput">University Email Address</label>
+                    <div class="login-input-wrap">
+                        <input
+                            type="email"
+                            id="emailInput"
+                            class="login-input"
+                            placeholder="you@cavendish.ac.ug"
+                            autocomplete="email"
+                            spellcheck="false"
+                        >
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="sendOtpBtn" onclick="sendOtp()">
+                    <span class="spinner" id="spinner1"></span>
+                    <span id="sendBtnLabel">Continue</span>
+                </button>
+
+                <div class="login-msg" id="msg1" role="alert"></div>
+
+                <div class="info-badge">
+                    <span class="info-tag">SECURE</span>
+                    <span>Students sign in with a one-time code. Staff &amp; Admins use email + password.</span>
+                </div>
+
+                <div class="login-footer-prompt">
+                    Don't have an account yet? <a href="./register.html">Register here</a>
+                </div>
             </div>
-             </div> 
-            </section> 
-        </main> 
-        <footer> <p> &copy; 2026 Capstone Management System </p> </footer>
+
+            <!-- ── STEP 2: Enter OTP ── -->
+            <div class="step" id="step2">
+                <p class="step-title">Check your email</p>
+                <p class="step-desc">We sent a 6-digit code to:</p>
+
+                <div style="text-align:center;">
+                    <div class="email-chip" id="emailChip">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg>
+                        <span id="emailDisplay"></span>
+                    </div>
+                </div>
+
+                <div class="otp-inputs" id="otpInputs">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp0" aria-label="OTP digit 1">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp1" aria-label="OTP digit 2">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp2" aria-label="OTP digit 3">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp3" aria-label="OTP digit 4">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp4" aria-label="OTP digit 5">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" id="otp5" aria-label="OTP digit 6">
+                </div>
+
+                <button type="button" class="btn-primary" id="verifyOtpBtn" onclick="verifyOtp()">
+                    <span class="spinner" id="spinner2"></span>
+                    <span id="verifyBtnLabel">Verify & Sign In</span>
+                </button>
+
+                <div class="login-msg" id="msg2" role="alert"></div>
+
+                <div class="resend-area">
+                    <span id="resendWrap">
+                        Didn't get it?
+                        <button class="btn-ghost" id="resendBtn" onclick="resendOtp()" disabled>Resend code</button>
+                        <span class="resend-timer" id="resendTimer"></span>
+                    </span>
+                </div>
+
+                <div style="text-align:center; margin-top: 14px;">
+                    <button class="btn-ghost" onclick="goBackToEmail()">← Use a different email</button>
+                </div>
+            </div>
+
+            <!-- ── STEP 2b: Password (Staff / Admin) ── -->
+            <div class="step" id="step2b">
+                <p class="step-title">Enter your password</p>
+                <p class="step-desc">Signing in as <span id="staffEmailDisplay" style="font-weight:700;color:#2563eb"></span></p>
+
+                <div class="login-field-group" style="margin-top:18px">
+                    <label class="login-label" for="passwordInput">Password</label>
+                    <div class="login-input-wrap">
+                        <input
+                            type="password"
+                            id="passwordInput"
+                            class="login-input"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                        >
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="signInPwdBtn" onclick="signInWithPassword()">
+                    <span class="spinner" id="spinner3"></span>
+                    <span id="pwdBtnLabel">Sign In</span>
+                </button>
+
+                <div class="login-msg" id="msg3" role="alert"></div>
+
+                <div style="text-align:center;margin-top:14px;">
+                    <button class="btn-ghost" onclick="goBackToEmail()">← Use a different email</button>
+                </div>
+            </div>
+
+        </div><!-- /login-body -->
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script>
+    // ── Supabase init guard + magic-link callback handler ──────
+    window.addEventListener('DOMContentLoaded', async () => {
+        const sb = window.CMS_SB && window.CMS_SB.client();
+        if (!sb) {
+            console.error('[CMS Login] Supabase client is NOT available. Check the anon key and CDN load order.');
+            showMsg('msg1', '⚠ Sign-in service failed to load. Please refresh the page. If this persists, contact support.', 'error');
+            return;
+        }
+        console.log('[CMS Login] Supabase client ready.');
+
+        // ── Handle magic-link / OTP email redirect ──────────────
+        // When a first-time staff member clicks the link in their email,
+        // Supabase redirects back here with a session in the URL fragment.
+        // We catch it, resolve their role, and send them to their dashboard.
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session && session.user) {
+                const email = session.user.email;
+                console.log('[CMS Login] Magic-link session detected for:', email);
+                showMsg('msg1', '✓ Email confirmed! Signing you in…', 'success');
+
+                let profile = null;
+                try { profile = await window.CMS_SB.Auth.getProfile(email); } catch(e) {}
+
+                if (profile && profile.is_active === false) {
+                    await sb.auth.signOut();
+                    showMsg('msg1', 'This account has been deactivated. Please contact the administrator.', 'error');
+                    return;
+                }
+
+                const targets = {
+                    coordinator: 'coordinator/dashboard.html',
+                    supervisor:  'supervisor/dashboard.html',
+                    admin:       'admin/admin-dashboard.html',
+                    student:     'student/studentdashboard.html'
+                };
+                const role   = (profile && targets[profile.role]) ? profile.role : 'student';
+                const target = targets[role] || targets.student;
+                const name   = (profile && profile.name) || session.user.user_metadata?.full_name || email.split('@')[0];
+
+                localStorage.setItem('cms_logged_user',   email);
+                localStorage.setItem('cms_user_role',     role);
+                localStorage.setItem('cms_user_name',     name);
+                localStorage.setItem('cms_student_name',  name);
+                if (profile && profile.student_id) localStorage.setItem('cms_student_id', profile.student_id);
+
+                setTimeout(() => window.location.replace(target), 800);
+            }
+        } catch(e) {
+            console.warn('[CMS Login] Session check error:', e);
+        }
+    });
+</script>
+<script>
+    const ALLOWED_DOMAIN = 'cavendish.ac.ug';
+    const STAFF_ROLES = ['admin', 'supervisor', 'coordinator'];
+
+    let currentEmail = '';
+    let currentProfile = null;
+    let resendInterval = null;
+
+    function getSb() { return window.CMS_SB && window.CMS_SB.client(); }
+    function go(url) { window.location.replace(url); }
+
+    // ── Messaging ──────────────────────────────────────────────
+    function showMsg(id, text, kind) {
+        const el = document.getElementById(id);
+        if (!text) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        el.innerHTML = text;
+        if (kind === 'success') {
+            el.style.background = '#f0fdf4'; el.style.color = '#15803d'; el.style.border = '1px solid #bbf7d0';
+        } else if (kind === 'info') {
+            el.style.background = '#eff6ff'; el.style.color = '#1d4ed8'; el.style.border = '1px solid #bfdbfe';
+        } else {
+            el.style.background = '#fef2f2'; el.style.color = '#b91c1c'; el.style.border = '1px solid #fecaca';
+        }
+    }
+
+    // ── Step navigation (step1 / step2 OTP / step2b Password) ──
+    function showStep(n) {
+        document.getElementById('step1').classList.toggle('active', n === 1);
+        document.getElementById('step2').classList.toggle('active', n === 2);
+        document.getElementById('step2b').classList.toggle('active', n === '2b');
+        const d1 = document.getElementById('dot1');
+        const d2 = document.getElementById('dot2');
+        if (n === 1) {
+            d1.className = 'step-dot active'; d2.className = 'step-dot';
+        } else {
+            d1.className = 'step-dot done'; d2.className = 'step-dot active';
+        }
+    }
+
+    function isCavendishEmail(email) {
+        const domain = (email.split('@')[1] || '');
+        return email.split('@').length === 2 &&
+               (domain === ALLOWED_DOMAIN || domain.endsWith('.' + ALLOWED_DOMAIN));
+    }
+
+    // ── Role resolver — trusts DB profile first ─────────────────
+    function resolveRole(email, profile) {
+        const targets = {
+            coordinator: 'coordinator/dashboard.html',
+            supervisor:  'supervisor/dashboard.html',
+            admin:       'admin/admin-dashboard.html',
+            student:     'student/studentdashboard.html'
+        };
+        if (profile && targets[profile.role]) return { role: profile.role, target: targets[profile.role] };
+        if (['admin@cavendish.ac.ug','administrator@cavendish.ac.ug','sysadmin@cavendish.ac.ug'].includes(email) || email.includes('admin'))
+            return { role: 'admin', target: targets.admin };
+        return { role: 'student', target: targets.student };
+    }
+
+    function saveSession(email, role, name, profile) {
+        localStorage.setItem('cms_logged_user',  email);
+        localStorage.setItem('cms_user_role',    role);
+        localStorage.setItem('cms_user_name',    name);
+        localStorage.setItem('cms_student_name', name);
+        if (profile && profile.student_id) localStorage.setItem('cms_student_id', profile.student_id);
+    }
+
+    function clearLocalSession() {
+        ['cms_logged_user','cms_user_role','cms_user_name','cms_student_name'].forEach(k => localStorage.removeItem(k));
+    }
+
+    // ── Busy states ─────────────────────────────────────────────
+    function setBusy1(busy) {
+        const btn = document.getElementById('sendOtpBtn');
+        btn.disabled = busy;
+        document.getElementById('spinner1').classList.toggle('visible', busy);
+        document.getElementById('sendBtnLabel').textContent = busy ? 'Checking…' : 'Continue';
+    }
+    function setBusy2(busy) {
+        const btn = document.getElementById('verifyOtpBtn');
+        btn.disabled = busy;
+        document.getElementById('spinner2').classList.toggle('visible', busy);
+        document.getElementById('verifyBtnLabel').textContent = busy ? 'Verifying…' : 'Verify & Sign In';
+    }
+    function setBusy3(busy) {
+        const btn = document.getElementById('signInPwdBtn');
+        btn.disabled = busy;
+        document.getElementById('spinner3').classList.toggle('visible', busy);
+        document.getElementById('pwdBtnLabel').textContent = busy ? 'Signing in…' : 'Sign In';
+    }
+
+    // ── OTP digit helpers ───────────────────────────────────────
+    function getOtpValue() {
+        return [0,1,2,3,4,5].map(i => document.getElementById('otp'+i).value).join('');
+    }
+    function clearOtpInputs() {
+        [0,1,2,3,4,5].forEach(i => {
+            const el = document.getElementById('otp'+i);
+            el.value = ''; el.classList.remove('filled');
+        });
+        document.getElementById('otp0').focus();
+    }
+    function initOtpInputs() {
+        const inputs = [0,1,2,3,4,5].map(i => document.getElementById('otp'+i));
+        inputs.forEach((inp, idx) => {
+            inp.addEventListener('input', e => {
+                const val = e.target.value.replace(/\D/g, '');
+                inp.value = val.slice(-1);
+                inp.classList.toggle('filled', !!inp.value);
+                if (val && idx < 5) inputs[idx + 1].focus();
+                if (getOtpValue().length === 6) setTimeout(verifyOtp, 80);
+            });
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !inp.value && idx > 0) inputs[idx - 1].focus();
+                if (e.key === 'ArrowLeft'  && idx > 0) inputs[idx - 1].focus();
+                if (e.key === 'ArrowRight' && idx < 5) inputs[idx + 1].focus();
+            });
+            inp.addEventListener('paste', e => {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                inputs.forEach((inp2, i) => { inp2.value = pasted[i] || ''; inp2.classList.toggle('filled', !!inp2.value); });
+                if (pasted.length >= 6) { inputs[5].focus(); setTimeout(verifyOtp, 80); }
+                else inputs[Math.min(pasted.length, 5)].focus();
+            });
+        });
+    }
+
+    // ── Resend timer ────────────────────────────────────────────
+    function startResendTimer(seconds = 60) {
+        const btn = document.getElementById('resendBtn');
+        const timer = document.getElementById('resendTimer');
+        btn.disabled = true;
+        let remaining = seconds;
+        timer.textContent = `(${remaining}s)`;
+        clearInterval(resendInterval);
+        resendInterval = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) { clearInterval(resendInterval); btn.disabled = false; timer.textContent = ''; }
+            else timer.textContent = `(${remaining}s)`;
+        }, 1000);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // STEP 1 — Email submitted: route staff → password, students → OTP
+    // ══════════════════════════════════════════════════════════════
+    async function sendOtp() {
+        showMsg('msg1', '');
+        const emailRaw = document.getElementById('emailInput').value.trim().toLowerCase();
+        if (!emailRaw) { showMsg('msg1', 'Please enter your email address.', 'error'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) { showMsg('msg1', 'Please enter a valid email address.', 'error'); return; }
+
+        const sb = getSb();
+        if (!sb) { showMsg('msg1', 'Sign-in service unavailable. Please refresh and try again.', 'error'); return; }
+
+        setBusy1(true);
+        showMsg('msg1', 'Checking account…', 'info');
+
+        let profile = null;
+        try { profile = await window.CMS_SB.Auth.getProfile(emailRaw); } catch(e) { console.warn('[CMS] getProfile error', e); }
+
+        const isStaff     = !!profile && STAFF_ROLES.includes(profile.role);
+        const isCavendish = isCavendishEmail(emailRaw);
+
+        // Access gate
+        if (!isCavendish && !isStaff) {
+            setBusy1(false);
+            showMsg('msg1', emailRaw + ' is not authorised. Use your @' + ALLOWED_DOMAIN + ' email, or contact the administrator.', 'error');
+            return;
+        }
+        if (profile && profile.is_active === false) {
+            setBusy1(false);
+            showMsg('msg1', 'This account has been deactivated. Please contact the administrator.', 'error');
+            return;
+        }
+
+        setBusy1(false);
+        showMsg('msg1', '');
+        currentEmail   = emailRaw;
+        currentProfile = profile;
+
+        // ── STAFF / ADMIN → Password panel ──────────────────────
+        if (isStaff) {
+            document.getElementById('staffEmailDisplay').textContent = emailRaw;
+            document.getElementById('passwordInput').value = '';
+            showMsg('msg3', '');
+            showStep('2b');
+            setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+            return;
+        }
+
+        // ── STUDENT → OTP ────────────────────────────────────────
+        showMsg('msg1', 'Sending sign-in code…', 'info');
+        setBusy1(true);
+        const { error } = await sb.auth.signInWithOtp({ email: emailRaw, options: { shouldCreateUser: false } });
+        setBusy1(false);
+
+        if (error) {
+            const msg = (error.message || '').toLowerCase();
+            if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('email rate')) {
+                showMsg('msg1', 'Too many requests — please wait 60 seconds and try again.', 'error');
+            } else if (msg.includes('user not found') || msg.includes('no user') || msg.includes('invalid login')) {
+                showMsg('msg1', 'No student account found for this email. Please register first or contact the administrator.', 'error');
+            } else {
+                showMsg('msg1', 'Could not send the code: ' + error.message, 'error');
+            }
+            return;
+        }
+
+        document.getElementById('emailDisplay').textContent = emailRaw;
+        showStep(2);
+        clearOtpInputs();
+        showMsg('msg2', '✓ Code sent! Enter the 6-digit code from your inbox (check spam too).', 'info');
+        startResendTimer(60);
+        setTimeout(() => document.getElementById('otp0').focus(), 120);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // STEP 2b — Password sign-in (Staff / Admin) — DB check only
+    // ══════════════════════════════════════════════════════════════
+    async function signInWithPassword() {
+        showMsg('msg3', '');
+        const password = document.getElementById('passwordInput').value;
+        if (!password) { showMsg('msg3', 'Please enter your password.', 'error'); return; }
+
+        const sb = getSb();
+        if (!sb) { showMsg('msg3', 'Service unavailable. Please refresh.', 'error'); return; }
+
+        setBusy3(true);
+
+        try {
+            // Query the profiles table for this email + password
+            const { data, error } = await sb
+                .from('profiles')
+                .select('*')
+                .eq('email', currentEmail)
+                .eq('password', password)
+                .single();
+
+            setBusy3(false);
+
+            if (error || !data) {
+                showMsg('msg3', 'Incorrect email or password. Please try again.', 'error');
+                return;
+            }
+
+            if (data.is_active === false) {
+                showMsg('msg3', 'This account has been deactivated. Please contact the administrator.', 'error');
+                return;
+            }
+
+            const profile = data;
+            const { role, target } = resolveRole(currentEmail, profile);
+            const name = profile.name || currentEmail.split('@')[0];
+            saveSession(currentEmail, role, name, profile);
+
+            showMsg('msg3', '✓ Signed in! Redirecting…', 'success');
+            setTimeout(() => go(target), 800);
+        } catch (e) {
+            setBusy3(false);
+            console.error('[CMS] Password login error:', e);
+            showMsg('msg3', 'Incorrect email or password. Please try again.', 'error');
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // STEP 2 — OTP verification (Students)
+    // ══════════════════════════════════════════════════════════════
+    async function verifyOtp() {
+        const code = getOtpValue();
+        if (code.length < 6) { showMsg('msg2', 'Please enter all 6 digits.', 'error'); return; }
+
+        showMsg('msg2', '');
+        setBusy2(true);
+        const sb = getSb();
+        if (!sb) { setBusy2(false); showMsg('msg2', 'Service unavailable. Please refresh.', 'error'); return; }
+
+        const { data, error } = await sb.auth.verifyOtp({ email: currentEmail, token: code, type: 'email' });
+        if (error) {
+            setBusy2(false);
+            showMsg('msg2', 'Invalid or expired code. Please try again or resend a new code.', 'error');
+            clearOtpInputs();
+            return;
+        }
+
+        const user = data.user || data.session?.user;
+        if (!user) { setBusy2(false); showMsg('msg2', 'Verification failed. Please try again.', 'error'); return; }
+
+        const profile = await window.CMS_SB.Auth.getProfile(currentEmail).catch(() => null);
+        if (profile && profile.is_active === false) {
+            await sb.auth.signOut().catch(() => {});
+            clearLocalSession(); setBusy2(false);
+            showMsg('msg2', 'This account has been deactivated. Please contact the administrator.', 'error');
+            return;
+        }
+
+        const { role, target } = resolveRole(currentEmail, profile);
+        const name = (profile && profile.name) || user.user_metadata?.full_name || currentEmail.split('@')[0];
+        saveSession(currentEmail, role, name, profile);
+
+        showMsg('msg2', '✓ Verified! Redirecting…', 'success');
+        setTimeout(() => go(target), 900);
+    }
+
+    // ── Resend OTP ──────────────────────────────────────────────
+    async function resendOtp() {
+        showMsg('msg2', '');
+        const sb = getSb();
+        if (!sb) { showMsg('msg2', 'Service unavailable.', 'error'); return; }
+        const btn = document.getElementById('resendBtn');
+        btn.disabled = true;
+        showMsg('msg2', 'Resending code…', 'info');
+        const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options: { shouldCreateUser: false } });
+        if (error) {
+            btn.disabled = false;
+            const msg = (error.message || '').toLowerCase();
+            showMsg('msg2', msg.includes('rate limit') || msg.includes('too many')
+                ? 'Rate limit reached. Please wait 60 seconds.' : 'Could not resend: ' + error.message, 'error');
+        } else {
+            showMsg('msg2', '✓ New code sent. Check your inbox and spam folder.', 'info');
+            clearOtpInputs(); startResendTimer(60);
+        }
+    }
 
 
+    // ── Back to email ───────────────────────────────────────────
+    function goBackToEmail() {
+        clearInterval(resendInterval);
+        ['msg1','msg2','msg3'].forEach(id => showMsg(id, ''));
+        showStep(1);
+        clearOtpInputs();
+        currentEmail = ''; currentProfile = null;
+    }
+
+    // ── Init ────────────────────────────────────────────────────
+    initOtpInputs();
+    clearLocalSession();
+    document.getElementById('emailInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendOtp(); });
+    document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') signInWithPassword(); });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    </section>
-</body>
-    
+</script>
 </body>
 </html>

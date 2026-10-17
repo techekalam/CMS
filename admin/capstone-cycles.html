@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capstone Cycles | Capstone Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<header class="dash-header">
+    <div class="dash-header-left">
+        <a href="../Index.html" class="dash-brand-link">
+            <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
+            <div class="dash-title-block">
+                <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
+                <p class="dash-site-sub">Cavendish University Uganda</p>
+            </div>
+        </a>
+    </div>
+    <div class="dash-header-right">
+        <span class="dash-portal-tag">Administrator Portal</span>
+        <div class="dash-user-pill">
+            <div class="dash-user-info">
+                <span class="dash-user-name" id="adminUserName">System Administrator</span>
+                <span class="dash-user-id">Central Administration</span>
+            </div>
+        </div>
+        <a href="../login.html" class="btn-header-logout">Logout</a>
+    </div>
+</header>
+<div class="app">
+<aside class="sidebar">
+  <nav class="nav"><div class="nav-section">Overview & Administration</div>
+<a class="" href="admin-dashboard.html"><span>Dashboard</span></a>
+<a class="" href="user-management.html"><span>User Management</span></a>
+<a class="" href="students.html"><span>Students</span></a>
+<a class="" href="staff.html"><span>Staff</span></a>
+<a class="" href="programs.html"><span>Programs</span></a>
+<a class="active" href="capstone-cycles.html"><span>Capstone Cycles</span></a>
+<a class="" href="projects.html"><span>Projects</span></a>
+<a class="" href="groups.html"><span>Groups</span></a>
+<a class="" href="historical-projects.html"><span>Historical Projects</span></a>
+<a class="" href="assessment-configuration.html"><span>Assessment Configuration</span></a>
+<a class="" href="reports.html"><span>Reports</span></a>
+<a class="" href="audit-logs.html"><span>Audit Logs</span></a>
+<a class="" href="system-settings.html"><span>System Settings</span></a>
+<a class="" href="profile.html"><span>Administrator Profile</span></a>    <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px;">
+      <a href="../login.html" style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:8px;font-size:13px;color:#fca5a5;font-weight:600;text-decoration:none;"><span>Logout</span></a>
+    </div>
+  </nav>
+</aside>
+<main class="main">
+    <section class="page"><div class="page-head"><div><h2>Capstone Cycle Management</h2><p>Open, close, and monitor academic capstone cycles and their registration windows.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#cycleTable" placeholder="Search cycles..."><button class="btn btn-primary" data-modal-open="cycleModal">+ New Cycle</button></div><div class="card"><div class="table-wrap"><table id="cycleTable"><thead><tr><th>Cycle ID</th><th>Academic Year</th><th>Start</th><th>End</th><th>Status</th><th>Progress</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span id="cycleCount">Showing 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div class="modal-backdrop" id="cycleModal"><div class="modal"><div class="modal-head"><h3>Create Capstone Cycle</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Academic Year</label><input id="newCycleYear" class="field" placeholder="2027/2028"></div><div class="input-group"><label>Cycle Name</label><input id="newCycleName" class="field" placeholder="2027/28 Capstone Cycle"></div><div class="input-group"><label>Start Date</label><input id="newCycleStart" class="field" type="date"></div><div class="input-group"><label>End Date</label><input id="newCycleEnd" class="field" type="date"></div><div class="input-group full"><label>Registration rules</label><textarea class="field" rows="4" placeholder="Define eligibility and registration restrictions..."></textarea></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="adminCreateCycle(this)">Create Cycle</button></div></div></div></section>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<script src="assets/admin.js"></script>
+<script src="assets/admin-api.js"></script>
+</body>
+</html>
