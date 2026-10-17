@@ -564,3 +564,121 @@
 .reg-nav-login-text { font-size: 13px; color: #6b7280; }
 .reg-nav-login-link { font-size: 13px; font-weight: 600; color: #60a5fa; text-decoration: none; }
 .reg-nav-login-link:hover { color: #93c5fd; }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE – Student Dashboard & All Inner Pages
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Hamburger Button ── */
+.hamburger-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;margin-right:8px;z-index:101}
+.hamburger-btn span{display:block;width:22px;height:2px;background:#fff;margin:5px 0;border-radius:2px;transition:0.3s}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:34}
+.sidebar-overlay.active{display:block}
+
+/* ── Tablet ≤ 768px ── */
+@media(max-width:768px){
+  .hamburger-btn{display:inline-flex;align-items:center}
+
+  /* Sidebar → slide-out drawer */
+  .dash-sidebar{
+    position:fixed;top:64px;left:0;bottom:0;
+    transform:translateX(-100%);
+    transition:transform 0.28s ease;
+    width:240px;z-index:35;
+  }
+  .dash-sidebar.open{transform:translateX(0)}
+
+  /* Main fills full width */
+  .dash-layout{flex-direction:column}
+  .dash-main{width:100%;padding:16px}
+
+  /* Header compact */
+  .dash-header{padding:0 12px;gap:6px}
+  .dash-portal-tag{display:none}
+  .dash-user-id{display:none}
+  .dash-user-name{font-size:11px}
+  .dash-user-pill{padding:4px 10px}
+  .btn-header-logout{padding:5px 10px;font-size:11px}
+  .dash-site-title{font-size:12px!important}
+  .dash-site-sub{font-size:9px}
+
+  /* Page content */
+  .page-title-row{flex-direction:column;gap:8px}
+  .page-title-row h2{font-size:18px}
+
+  /* Group page → single column */
+  .group-layout{grid-template-columns:1fr}
+
+  /* Chat card */
+  .group-chat-card{height:400px}
+
+  /* Tables scroll */
+  .group-members-table, .milestone-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Scenario pills stack */
+  .scenario-row{flex-direction:column}
+  .scenario-pill{min-width:0}
+
+  /* Progress section stack */
+  .progress-section{flex-direction:column}
+  .progress-left{border-right:none;border-bottom:1px solid #e5e7eb;padding:0 0 12px;width:100%}
+
+  /* Home page */
+  .home-navbar{padding:10px 16px}
+  .home-hero{padding:60px 20px 50px}
+  .hero-title{font-size:28px}
+  .hero-subtitle{font-size:14px}
+  .how-steps{flex-direction:column;gap:20px}
+  .how-steps::before{display:none}
+  .home-stats-strip{flex-wrap:wrap}
+  .home-stat-item{min-width:50%;padding:18px 10px}
+  .home-features{padding:40px 16px}
+  .cta-banner{padding:40px 16px}
+
+  /* Register page */
+  .reg-nav{padding:10px 16px}
+
+  /* Milestone steps */
+  .milestone-steps{flex-direction:column}
+  .step-item{min-width:0}
+}
+
+/* ── Phone ≤ 480px ── */
+@media(max-width:480px){
+  .dash-header{height:54px;padding:0 8px}
+  .dash-logo{height:30px;width:30px}
+  .dash-site-title{font-size:11px!important}
+  .dash-user-pill{display:none}
+  .btn-header-logout{padding:4px 8px;font-size:10px}
+
+  .dash-sidebar{top:54px}
+  .dash-main{padding:10px}
+
+  .page-title-row h2{font-size:16px}
+
+  /* Cards */
+  .dash-card,.tracker-card,.group-info-card{padding:14px}
+  .dash-card-title{font-size:13px}
+
+  /* Group chat smaller */
+  .group-chat-card{height:350px}
+  .chat-input{font-size:12px;padding:8px 10px}
+  .msg-bubble{max-width:85%}
+
+  /* Hero smaller */
+  .hero-title{font-size:22px}
+  .hero-subtitle{font-size:13px}
+  .hero-btn-primary,.hero-btn-secondary{padding:10px 20px;font-size:13px}
+  .hero-trust{flex-direction:column;gap:8px;align-items:center}
+
+  /* Stats strip */
+  .home-stat-item{min-width:50%;padding:14px 8px}
+  .home-stat-num{font-size:22px}
+
+  /* How It Works */
+  .how-section{padding:40px 16px}
+
+  /* Feature cards */
+  .home-features-grid{grid-template-columns:1fr}
+  .home-features-title{font-size:22px}
+}

@@ -41,6 +41,7 @@
   })();
 </script>
     <div class="dash-header-left">
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active')"><span></span><span></span><span></span></button>
         <a href="../index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
@@ -61,6 +62,7 @@
     </div>
 </header>
 <div class="app">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('active')"></div>
 <aside class="sidebar">
   <nav class="nav"><div class="nav-section">Overview & Administration</div>
 <a class="active" href="admin-dashboard.html"><span>Dashboard</span></a>

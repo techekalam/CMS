@@ -43,8 +43,7 @@
     window.addEventListener('pagehide',function(){});
   })();
 </script>
-    <div class="dash-header-left">
-        <a href="../index.html" class="dash-brand-link">
+    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.dash-sidebar').classList.toggle('open');var ov=document.getElementById('sidebarOverlay');if(ov)ov.classList.toggle('active')"><span></span><span></span><span></span></button><a href="../index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
                 <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
@@ -65,7 +64,7 @@
 </header>
 
 <div class="dash-layout">
-    <aside class="dash-sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="document.querySelector('.dash-sidebar').classList.remove('open');this.classList.remove('active')"></div><aside class="dash-sidebar">
         <nav>
             <ul class="dash-nav-list">
                 <li><a href="studentdashboard.html" class="dash-nav-link">Dashboard</a></li>
@@ -99,4 +98,5 @@
 <script src="../assets/js/main.js"></script>
 </body>
 </html>
+
 
