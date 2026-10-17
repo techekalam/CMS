@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,7 @@
         window.location.replace('../login.html');
       }
     </script>
-    <title>My Group – Capstone Management System</title>
+    <title>My Group â€“ Capstone Management System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
@@ -75,7 +75,7 @@
 
 <header class="dash-header">
     <div class="dash-header-left">
-        <a href="../Index.html" class="dash-brand-link">
+        <a href="../index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
                 <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
@@ -117,7 +117,7 @@
                 <h2>My Project Group</h2>
                 <p>Team members, supervisor assignment, and real-time group chat</p>
             </div>
-            <span class="ms-badge ms-pending" id="groupPageBadge">Loading…</span>
+            <span class="ms-badge ms-pending" id="groupPageBadge">Loadingâ€¦</span>
         </div>
 
         <div id="groupLayout" class="group-layout" style="display:none;">
@@ -139,7 +139,7 @@
                             </tr>
                         </thead>
                         <tbody id="groupMembersBody">
-                            <tr><td colspan="4"><span class="spin"></span> Loading members…</td></tr>
+                            <tr><td colspan="4"><span class="spin"></span> Loading membersâ€¦</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -157,11 +157,11 @@
                         </div>
                         <div style="padding:13px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb;">
                             <div style="font-size:11px;color:#6b7280;margin-bottom:4px;font-weight:500;">Group Number</div>
-                            <div id="groupNumberInfo" style="font-size:13px;font-weight:600;color:#374151;">—</div>
+                            <div id="groupNumberInfo" style="font-size:13px;font-weight:600;color:#374151;">â€”</div>
                         </div>
                         <div style="padding:13px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb;">
                             <div style="font-size:11px;color:#6b7280;margin-bottom:4px;font-weight:500;">Group Status</div>
-                            <div id="groupStatus" style="font-size:13px;font-weight:600;color:#374151;">—</div>
+                            <div id="groupStatus" style="font-size:13px;font-weight:600;color:#374151;">â€”</div>
                         </div>
                     </div>
                 </div>
@@ -179,10 +179,10 @@
                     </div>
                 </div>
                 <div class="chat-messages" id="chatMessages">
-                    <div style="text-align:center;color:#9ca3af;font-size:13px;margin-top:40px;">Loading messages…</div>
+                    <div style="text-align:center;color:#9ca3af;font-size:13px;margin-top:40px;">Loading messagesâ€¦</div>
                 </div>
                 <div class="chat-input-row">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a message…" autocomplete="off">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a messageâ€¦" autocomplete="off">
                     <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
                 </div>
             </div>
@@ -201,7 +201,7 @@
 <script src="../supabase.js"></script>
 <script>
 (async function() {
-    // ── Session ───────────────────────────────────────────────
+    // â”€â”€ Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const myEmail    = localStorage.getItem('cms_logged_user') || '';
     const myName     = localStorage.getItem('cms_student_name') || localStorage.getItem('cms_user_name') || 'Student';
     const myStudentId = localStorage.getItem('cms_student_id') || '';
@@ -214,7 +214,7 @@
     const sb = getSb();
     if (!sb) { document.getElementById('groupPageBadge').textContent = 'DB Error'; return; }
 
-    // ── Load group via student_status ─────────────────────────
+    // â”€â”€ Load group via student_status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let groupData = null;
     let groupNumber = '';
     let members = [];
@@ -257,18 +257,18 @@
     groupData = grp;
     groupNumber = grp.group_number;
 
-    // ── Render group info ─────────────────────────────────────
+    // â”€â”€ Render group info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     document.getElementById('groupPageBadge').textContent = groupNumber;
     document.getElementById('groupPageBadge').className = 'ms-badge ms-approved';
     document.getElementById('groupNumberBadge').textContent = groupNumber;
     document.getElementById('groupNumberInfo').textContent = groupNumber;
     document.getElementById('groupTopic').textContent = grp.project_title || 'Not yet set';
     document.getElementById('groupSupervisor').textContent = grp.supervisor_name || 'Not yet assigned';
-    document.getElementById('groupStatus').textContent = grp.status === 'IN_PROGRESS' ? '🟢 In Progress' : '✅ Complete';
-    document.getElementById('chatGroupLabel').textContent = groupNumber + ' · Live Chat';
+    document.getElementById('groupStatus').textContent = grp.status === 'IN_PROGRESS' ? 'ðŸŸ¢ In Progress' : 'âœ… Complete';
+    document.getElementById('chatGroupLabel').textContent = groupNumber + ' Â· Live Chat';
     document.getElementById('groupLayout').style.display = 'grid';
 
-    // ── Load members (first member = leader) ──────────────────
+    // â”€â”€ Load members (first member = leader) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const { data: mems } = await sb
         .from('group_students')
         .select('*')
@@ -284,23 +284,23 @@
         tbody.innerHTML = members.map((m, i) => {
             const isLeader = i === 0;
             const isMe = m.student_id === myStudId;
-            const leaderBadge = isLeader ? '<span class="leader-badge">👑 Leader</span>' : '';
+            const leaderBadge = isLeader ? '<span class="leader-badge">ðŸ‘‘ Leader</span>' : '';
             const youBadge = isMe ? '<span class="you-badge">You</span>' : '';
             return `<tr>
                 <td><strong>${escHtml(m.name)}</strong>${leaderBadge}${youBadge}</td>
-                <td>${escHtml(m.course || '—')}</td>
+                <td>${escHtml(m.course || 'â€”')}</td>
                 <td>${isLeader ? 'Group Leader' : 'Member'}</td>
                 <td><span style="color:#16a34a;font-weight:600;">Active</span></td>
             </tr>`;
         }).join('');
     }
 
-    // ── Auto-assign supervisor if group has none ──────────────
+    // â”€â”€ Auto-assign supervisor if group has none â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!grp.supervisor_id) {
         assignSupervisorToGroup(sb, groupId, groupNumber);
     }
 
-    // ── Load chat messages ────────────────────────────────────
+    // â”€â”€ Load chat messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const chatBox = document.getElementById('chatMessages');
     const { data: msgs } = await sb
         .from('messages')
@@ -310,13 +310,13 @@
 
     chatBox.innerHTML = '';
     if (!msgs || msgs.length === 0) {
-        chatBox.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;margin-top:40px;">No messages yet. Say hello to your group! 👋</div>';
+        chatBox.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;margin-top:40px;">No messages yet. Say hello to your group! ðŸ‘‹</div>';
     } else {
         msgs.forEach(m => appendMessage(m, myStudId));
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // ── Supabase Realtime — subscribe to new messages ─────────
+    // â”€â”€ Supabase Realtime â€” subscribe to new messages â”€â”€â”€â”€â”€â”€â”€â”€â”€
     sb.channel('group-chat-' + groupNumber)
         .on('postgres_changes', {
             event: 'INSERT',
@@ -333,7 +333,7 @@
         })
         .subscribe();
 
-    // ── Send message ──────────────────────────────────────────
+    // â”€â”€ Send message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     window.sendMessage = async function() {
         const input = document.getElementById('chatInput');
         const btn   = document.getElementById('sendBtn');
@@ -362,7 +362,7 @@
         if (e.key === 'Enter') window.sendMessage();
     });
 
-    // ── Helpers ───────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function appendMessage(msg, myId) {
         const isMe = msg.sender_id === myId || msg.sender_id === myEmail;
         const initials = (msg.sender_name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -387,7 +387,7 @@
         return d.innerHTML;
     }
 
-    // ── Auto-assign supervisor (round-robin) ──────────────────
+    // â”€â”€ Auto-assign supervisor (round-robin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function assignSupervisorToGroup(sb, groupId, groupNumber) {
         try {
             // Get all active supervisors

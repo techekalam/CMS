@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register – Capstone Management System</title>
+    <title>Register â€“ Capstone Management System</title>
     <meta name="description" content="Create your student account to access the Capstone Management System.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
             flex-direction: column;
         }
 
-        /* ── NAV ── */
+        /* â”€â”€ NAV â”€â”€ */
         .reg-nav {
             display: flex;
             align-items: center;
@@ -91,7 +91,7 @@
             color: #fff;
         }
 
-        /* ── MAIN WRAPPER ── */
+        /* â”€â”€ MAIN WRAPPER â”€â”€ */
         .reg-wrapper {
             flex: 1;
             display: flex;
@@ -100,7 +100,7 @@
             padding: 48px 20px;
         }
 
-        /* ── CARD ── */
+        /* â”€â”€ CARD â”€â”€ */
         .reg-card {
             width: 100%;
             max-width: 540px;
@@ -223,7 +223,7 @@
             position: relative;
         }
         .reg-select-wrap::after {
-            content: '▾';
+            content: 'â–¾';
             position: absolute;
             right: 14px;
             top: 50%;
@@ -328,7 +328,7 @@
         }
         .reg-login-prompt a:hover { text-decoration: underline; }
 
-        /* ── SUCCESS SCREEN ── */
+        /* â”€â”€ SUCCESS SCREEN â”€â”€ */
         .reg-success {
             display: none;
             padding: 48px 36px;
@@ -373,9 +373,9 @@
 </head>
 <body>
 
-    <!-- ── NAV ── -->
+    <!-- â”€â”€ NAV â”€â”€ -->
     <nav class="reg-nav">
-        <a href="./Index.html" class="reg-nav-brand">
+        <a href="./index.html" class="reg-nav-brand">
             <img src="./assets/logo.jpg" alt="CUU Logo" class="reg-nav-logo">
             <div>
                 <span class="reg-brand-name">CAPSTONE MANAGEMENT SYSTEM</span>
@@ -384,11 +384,11 @@
         </a>
         <div class="reg-nav-right">
             <a href="./login.html" class="reg-nav-btn">Sign In</a>
-            <a href="./Index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;font-weight:600;padding:6px 12px;">Home</a>
+            <a href="./index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;font-weight:600;padding:6px 12px;">Home</a>
         </div>
     </nav>
 
-    <!-- ── MAIN ── -->
+    <!-- â”€â”€ MAIN â”€â”€ -->
     <div class="reg-wrapper">
         <div class="reg-card" id="regCard">
 
@@ -421,7 +421,7 @@
             <!-- FORM -->
             <form class="reg-form-body" id="regForm" novalidate>
 
-                <!-- STEP 1 – Account Details -->
+                <!-- STEP 1 â€“ Account Details -->
                 <div id="step1">
                     <div class="reg-form-group">
                         <label class="reg-label" for="full-name">Full Name <span class="req">*</span></label>
@@ -446,11 +446,11 @@
                     </div>
 
                     <button type="button" class="reg-submit-btn" id="next1Btn" onclick="goToStep2()">
-                        Continue → Academic Details
+                        Continue â†’ Academic Details
                     </button>
                 </div>
 
-                <!-- STEP 2 – Academic Details -->
+                <!-- STEP 2 â€“ Academic Details -->
                 <div id="step2" style="display:none;">
                     <div class="reg-form-group">
                         <label class="reg-label" for="school-id">School ID / Student Number <span class="req">*</span></label>
@@ -516,12 +516,12 @@
                     </div>
 
                     <div style="display:flex;gap:10px;">
-                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep1()">← Back</button>
-                        <button type="button" class="reg-submit-btn" id="next2Btn" onclick="goToStep3()">Review &amp; Submit →</button>
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep1()">â† Back</button>
+                        <button type="button" class="reg-submit-btn" id="next2Btn" onclick="goToStep3()">Review &amp; Submit â†’</button>
                     </div>
                 </div>
 
-                <!-- STEP 3 – Review & Confirm -->
+                <!-- STEP 3 â€“ Review & Confirm -->
                 <div id="step3" style="display:none;">
                     <div style="background:#f9fafb;border-radius:12px;padding:18px;margin-bottom:18px;border:1px solid #e5e7eb;">
                         <h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.5px;">Review Your Details</h3>
@@ -536,7 +536,7 @@
                     </div>
 
                     <div style="display:flex;gap:10px;">
-                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep2Back()">← Edit</button>
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep2Back()">â† Edit</button>
                         <button type="submit" class="reg-submit-btn" id="submitBtn">Complete Registration</button>
                     </div>
 
@@ -548,10 +548,10 @@
 
             <!-- SUCCESS STATE -->
             <div class="reg-success" id="regSuccess">
-                <div class="success-icon">•</div>
+                <div class="success-icon">â€¢</div>
                 <h2 class="success-title">Account Created!</h2>
                 <p class="success-sub">Welcome to the Capstone Management System,<br><strong id="successName"></strong>.<br>Your student record has been initialized.<span id="successGroup"></span> You can now sign in.</p>
-                <a href="./login.html" class="success-btn">Go to Login →</a>
+                <a href="./login.html" class="success-btn">Go to Login â†’</a>
             </div>
 
         </div><!-- /reg-card -->
@@ -560,7 +560,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./assets/js/supabase.js"></script>
     <script>
-        // ── PASSWORD STRENGTH ──
+        // â”€â”€ PASSWORD STRENGTH â”€â”€
         const pwInput = document.getElementById('password');
         const fill    = document.getElementById('strengthFill');
         const txt     = document.getElementById('strengthText');
@@ -585,7 +585,7 @@
             txt.style.color       = levels[score].c;
         });
 
-        // ── STEP NAVIGATION ──
+        // â”€â”€ STEP NAVIGATION â”€â”€
         function setStep(n) {
             [1,2,3].forEach(i => {
                 document.getElementById('step'+i).style.display = (i===n) ? '' : 'none';
@@ -639,11 +639,11 @@
                 ['Full Name',     document.getElementById('full-name').value],
                 ['Email',         document.getElementById('email').value],
                 ['School ID',     sid],
-                ['Intake Year',   iyEl.value || '—'],
-                ['Study Year',    syEl.options[syEl.selectedIndex]?.text || '—'],
+                ['Intake Year',   iyEl.value || 'â€”'],
+                ['Study Year',    syEl.options[syEl.selectedIndex]?.text || 'â€”'],
                 ['Mode of Study', modeLabels[mode] || mode],
                 ['Programme',     programLabels[prog] || prog],
-                ['Phone',         document.getElementById('phone').value || '—'],
+                ['Phone',         document.getElementById('phone').value || 'â€”'],
             ];
 
             document.getElementById('reviewContent').innerHTML = rows.map(([k,v]) => `
@@ -658,7 +658,7 @@
 
         function goToStep2Back() { setStep(2); }
 
-        // ── FORM SUBMIT ──
+        // â”€â”€ FORM SUBMIT â”€â”€
         document.getElementById('regForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!document.getElementById('terms').checked) {
@@ -727,3 +727,4 @@
 
 </body>
 </html>
+
