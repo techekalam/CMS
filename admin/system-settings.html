@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>System Settings | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">

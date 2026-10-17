@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Administrator Profile | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -54,7 +84,7 @@
 <main class="main">
     <section class="page"><div class="page-head"><div><h2>Administrator Profile</h2><p>Manage your administrator identity and account preferences.</p></div><div class="actions"><button class="btn btn-primary" onclick="showToast('Profile updated successfully','success')">Save Changes</button></div></div>
 <div class="profile-grid">
-<div class="card profile-side"><div class="profile-big">—</div><h3>Administrator</h3><p>System Administrator</p><span class="status s-success">Account Active</span><div style="height:16px"></div><a class="btn" href="user-management.html">View User Account</a></div>
+<div class="card profile-side"><div class="profile-big">â€”</div><h3>Administrator</h3><p>System Administrator</p><span class="status s-success">Account Active</span><div style="height:16px"></div><a class="btn" href="user-management.html">View User Account</a></div>
 <div class="card"><div class="card-head"><h3>Account Information</h3></div><div class="card-body"><div class="form-grid">
 <div class="input-group"><label>First name</label><input class="field"></div>
 <div class="input-group"><label>Last name</label><input class="field"></div>

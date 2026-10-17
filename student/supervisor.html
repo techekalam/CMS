@@ -1,9 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='student'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Supervisor – Capstone Management System</title>
+    <title>My Supervisor â€“ Capstone Management System</title>
     <meta name="description" content="View assigned supervisor contact information and office hours.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,6 +28,21 @@
 <body class="dash-body">
 
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='student'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -62,19 +92,19 @@
 
             <div style="background:#f8fafc;padding:24px;border-radius:12px;border:1px solid #e2e8f0;">
                 <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-                    <div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">—</div>
+                    <div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;">â€”</div>
                     <div>
                         <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 4px;">Not Assigned</h3>
-                        <span style="font-size:12.5px;color:#2563eb;font-weight:600;">—</span>
+                        <span style="font-size:12.5px;color:#2563eb;font-weight:600;">â€”</span>
                     </div>
                 </div>
                 
                 <div style="text-align:left;background:#fff;padding:18px;border-radius:8px;border:1px solid #e5e7eb;font-size:13.5px;color:#475569;">
-                    <p style="margin:0 0 10px;"><strong>Department:</strong> —</p>
-                    <p style="margin:0 0 10px;"><strong>Institutional Email:</strong> —</p>
-                    <p style="margin:0 0 10px;"><strong>Office Location:</strong> —</p>
-                    <p style="margin:0 0 10px;"><strong>Consultation Hours:</strong> —</p>
-                    <p style="margin:0;"><strong>Assigned Group:</strong> —</p>
+                    <p style="margin:0 0 10px;"><strong>Department:</strong> â€”</p>
+                    <p style="margin:0 0 10px;"><strong>Institutional Email:</strong> â€”</p>
+                    <p style="margin:0 0 10px;"><strong>Office Location:</strong> â€”</p>
+                    <p style="margin:0 0 10px;"><strong>Consultation Hours:</strong> â€”</p>
+                    <p style="margin:0;"><strong>Assigned Group:</strong> â€”</p>
                 </div>
             </div>
         </div>

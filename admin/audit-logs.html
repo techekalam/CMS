@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Audit Logs | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -53,7 +83,7 @@
 </aside>
 <main class="main">
     <section class="page">
-    <div class="page-head"><div><h2>Audit Logs</h2><p>Review important system activities and changes for accountability, security, and traceability.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#auditTable" placeholder="Search audit activity..."><select class="field"><option>All event types</option><option>Authentication</option><option>Users</option><option>Students</option><option>Projects</option><option>Configuration</option></select><select class="field"><option>All outcomes</option><option>Success</option><option>Viewed</option><option>Warning</option></select><button class="btn" onclick="showToast('Exporting audit logs...','info')">Export Logs</button></div><div class="card"><div class="table-wrap"><table id="auditTable"><thead><tr><th>Event ID</th><th>Activity</th><th>Actor</th><th>Module</th><th>Timestamp</th><th>Outcome</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div></section>
+    <div class="page-head"><div><h2>Audit Logs</h2><p>Review important system activities and changes for accountability, security, and traceability.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#auditTable" placeholder="Search audit activity..."><select class="field"><option>All event types</option><option>Authentication</option><option>Users</option><option>Students</option><option>Projects</option><option>Configuration</option></select><select class="field"><option>All outcomes</option><option>Success</option><option>Viewed</option><option>Warning</option></select><button class="btn" onclick="showToast('Exporting audit logs...','info')">Export Logs</button></div><div class="card"><div class="table-wrap"><table id="auditTable"><thead><tr><th>Event ID</th><th>Activity</th><th>Actor</th><th>Module</th><th>Timestamp</th><th>Outcome</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div></section>
 </main>
 </div>
 <script src="assets/admin.js"></script>

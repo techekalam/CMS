@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Program Management | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -52,7 +82,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Academic Programs</h2><p>Configure programs used for eligibility, registration, reporting, and project records.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#programTable" placeholder="Search programs..."><button class="btn btn-primary" data-modal-open="programModal">+ Add Program</button></div><div class="card"><div class="table-wrap"><table id="programTable"><thead><tr><th>Code</th><th>Program</th><th>Short Code</th><th>School / Faculty</th><th>Status</th><th>Typical Level</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div class="modal-backdrop" id="programModal"><div class="modal"><div class="modal-head"><h3>Add Academic Program</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Program code</label><input class="field" placeholder="e.g. BSCS"></div><div class="input-group"><label>Program name</label><input class="field" placeholder="e.g. Bachelor of Science in Computer Science"></div><div class="input-group"><label>Short code</label><input class="field" placeholder="e.g. CS"></div><div class="input-group"><label>School / Faculty</label><select class="field"><option>School of Computing & Technology</option><option>School of Engineering</option><option>School of Business</option><option>School of Science</option><option>School of Arts & Humanities</option></select></div><div class="input-group"><label>Typical level</label><select class="field"><option>Year 3</option><option>Year 4</option><option>Postgraduate</option></select></div><div class="input-group"><label>Status</label><select class="field"><option>Active</option><option>Inactive</option></select></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Program added successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Save Program</button></div></div></div></section>
+    <section class="page"><div class="page-head"><div><h2>Academic Programs</h2><p>Configure programs used for eligibility, registration, reporting, and project records.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#programTable" placeholder="Search programs..."><button class="btn btn-primary" data-modal-open="programModal">+ Add Program</button></div><div class="card"><div class="table-wrap"><table id="programTable"><thead><tr><th>Code</th><th>Program</th><th>Short Code</th><th>School / Faculty</th><th>Status</th><th>Typical Level</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div><div class="modal-backdrop" id="programModal"><div class="modal"><div class="modal-head"><h3>Add Academic Program</h3><button class="close" data-modal-close>Ã—</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Program code</label><input class="field" placeholder="e.g. BSCS"></div><div class="input-group"><label>Program name</label><input class="field" placeholder="e.g. Bachelor of Science in Computer Science"></div><div class="input-group"><label>Short code</label><input class="field" placeholder="e.g. CS"></div><div class="input-group"><label>School / Faculty</label><select class="field"><option>School of Computing & Technology</option><option>School of Engineering</option><option>School of Business</option><option>School of Science</option><option>School of Arts & Humanities</option></select></div><div class="input-group"><label>Typical level</label><select class="field"><option>Year 3</option><option>Year 4</option><option>Postgraduate</option></select></div><div class="input-group"><label>Status</label><select class="field"><option>Active</option><option>Inactive</option></select></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Program added successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Save Program</button></div></div></div></section>
 </main>
 </div>
 <script src="assets/admin.js"></script>

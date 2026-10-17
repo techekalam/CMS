@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Assessment Configuration | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -52,7 +82,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Assessment Configuration</h2><p>Configure assessment components, authorized roles, percentages, and grading rules by capstone cycle.</p></div><div class="actions"></div></div><div class="toolbar"><select class="field"><option>2026/27 Cycle</option><option>2025/26 Cycle</option></select><button class="btn btn-primary" data-modal-open="componentModal">+ Add Component</button></div><div class="card"><div class="table-wrap"><table id="assessmentTable"><thead><tr><th>Assessment Component</th><th>Percentage</th><th>Authorized Role</th><th>Status</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div class="grid two" style="margin-top:16px"><div class="card"><div class="card-head"><h3>Grading Scale</h3></div><div class="card-body"><div class="kv"><strong>A</strong><span>80–100</span></div><div class="kv"><strong>B - B+</strong><span>70–79</span></div><div class="kv"><strong>D - C+</strong><span>50–69</span></div><div class="kv"><strong>Below Pass</strong><span>0–49</span></div></div></div><div class="card"><div class="card-head"><h3>Configuration Notes</h3></div><div class="card-body"><div class="notice">Percentages must total <strong>100%</strong>. Changes should be audited and applied to the selected capstone cycle.</div></div></div></div><div class="modal-backdrop" id="componentModal"><div class="modal"><div class="modal-head"><h3>Add Assessment Component</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Component name</label><input class="field"></div><div class="input-group"><label>Percentage (%)</label><input class="field" type="number" min="0" max="100"></div><div class="input-group full"><label>Authorized role</label><select class="field"><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Assessment component saved successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Save Component</button></div></div></div></section>
+    <section class="page"><div class="page-head"><div><h2>Assessment Configuration</h2><p>Configure assessment components, authorized roles, percentages, and grading rules by capstone cycle.</p></div><div class="actions"></div></div><div class="toolbar"><select class="field"><option>2026/27 Cycle</option><option>2025/26 Cycle</option></select><button class="btn btn-primary" data-modal-open="componentModal">+ Add Component</button></div><div class="card"><div class="table-wrap"><table id="assessmentTable"><thead><tr><th>Assessment Component</th><th>Percentage</th><th>Authorized Role</th><th>Status</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div><div class="grid two" style="margin-top:16px"><div class="card"><div class="card-head"><h3>Grading Scale</h3></div><div class="card-body"><div class="kv"><strong>A</strong><span>80â€“100</span></div><div class="kv"><strong>B - B+</strong><span>70â€“79</span></div><div class="kv"><strong>D - C+</strong><span>50â€“69</span></div><div class="kv"><strong>Below Pass</strong><span>0â€“49</span></div></div></div><div class="card"><div class="card-head"><h3>Configuration Notes</h3></div><div class="card-body"><div class="notice">Percentages must total <strong>100%</strong>. Changes should be audited and applied to the selected capstone cycle.</div></div></div></div><div class="modal-backdrop" id="componentModal"><div class="modal"><div class="modal-head"><h3>Add Assessment Component</h3><button class="close" data-modal-close>Ã—</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Component name</label><input class="field"></div><div class="input-group"><label>Percentage (%)</label><input class="field" type="number" min="0" max="100"></div><div class="input-group full"><label>Authorized role</label><select class="field"><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Assessment component saved successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Save Component</button></div></div></div></section>
 </main>
 </div>
 <script src="assets/admin.js"></script>

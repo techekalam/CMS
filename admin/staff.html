@@ -1,6 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Staff Management | Capstone Management System</title>
@@ -10,6 +25,21 @@
 </head>
 <body>
 <header class="dash-header">
+<script>
+  (function(){
+    function _g(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      document.documentElement.style.visibility='visible';
+    }
+    _g();
+    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+  })();
+</script>
     <div class="dash-header-left">
         <a href="../Index.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
@@ -52,7 +82,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Staff Management</h2><p>Register and maintain academic staff, supervisors, coordinators, and assessors.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#staffTable" placeholder="Search staff..."><select class="field"><option>All roles</option><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select><button class="btn btn-primary" data-modal-open="staffModal">+ Add Staff</button></div><div class="card"><div class="table-wrap"><table id="staffTable"><thead><tr><th>Staff ID</th><th>Name</th><th>Department</th><th>Role</th><th>Status</th><th>Workload</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span id="staffCount">Showing 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div class="modal-backdrop" id="staffModal"><div class="modal"><div class="modal-head"><h3>Add Staff Member</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Staff ID</label><input id="newStaffId" class="field" placeholder="e.g. STF-001"></div><div class="input-group"><label>Full name</label><input id="newStaffName" class="field" placeholder="Enter full name"></div><div class="input-group"><label>Email</label><input id="newStaffEmail" class="field" type="email" placeholder="name@example.com"></div><div class="input-group"><label>Department</label><select id="newStaffDept" class="field"><option>Computing</option><option>Engineering</option><option>Business</option><option>Science</option><option>Arts &amp; Humanities</option></select></div><div class="input-group"><label>Role</label><select id="newStaffRole" class="field"><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select></div><div class="input-group"><label>Status</label><select id="newStaffStatus" class="field"><option>Active</option><option>Inactive</option></select></div><div class="input-group"><label>Password</label><input id="newStaffPassword" class="field" type="password" placeholder="Set initial password"></div><div class="input-group"><label>Confirm Password</label><input id="newStaffPasswordConfirm" class="field" type="password" placeholder="Repeat password"></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="adminCreateStaff(this)">Save Staff</button></div></div></div></section>
+    <section class="page"><div class="page-head"><div><h2>Staff Management</h2><p>Register and maintain academic staff, supervisors, coordinators, and assessors.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#staffTable" placeholder="Search staff..."><select class="field"><option>All roles</option><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select><button class="btn btn-primary" data-modal-open="staffModal">+ Add Staff</button></div><div class="card"><div class="table-wrap"><table id="staffTable"><thead><tr><th>Staff ID</th><th>Name</th><th>Department</th><th>Role</th><th>Status</th><th>Workload</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span id="staffCount">Showing 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div><div class="modal-backdrop" id="staffModal"><div class="modal"><div class="modal-head"><h3>Add Staff Member</h3><button class="close" data-modal-close>Ã—</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Staff ID</label><input id="newStaffId" class="field" placeholder="e.g. STF-001"></div><div class="input-group"><label>Full name</label><input id="newStaffName" class="field" placeholder="Enter full name"></div><div class="input-group"><label>Email</label><input id="newStaffEmail" class="field" type="email" placeholder="name@example.com"></div><div class="input-group"><label>Department</label><select id="newStaffDept" class="field"><option>Computing</option><option>Engineering</option><option>Business</option><option>Science</option><option>Arts &amp; Humanities</option></select></div><div class="input-group"><label>Role</label><select id="newStaffRole" class="field"><option>Supervisor</option><option>Coordinator</option><option>Assessor</option></select></div><div class="input-group"><label>Status</label><select id="newStaffStatus" class="field"><option>Active</option><option>Inactive</option></select></div><div class="input-group"><label>Password</label><input id="newStaffPassword" class="field" type="password" placeholder="Set initial password"></div><div class="input-group"><label>Confirm Password</label><input id="newStaffPasswordConfirm" class="field" type="password" placeholder="Repeat password"></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="adminCreateStaff(this)">Save Staff</button></div></div></div></section>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
