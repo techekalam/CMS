@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <script>
@@ -122,7 +122,55 @@
 </section>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
 <script src="assets/admin.js"></script>
+<script>
+(async function loadDashboardStats() {
+  const sb = window.CMS_SB && window.CMS_SB.client();
+  if (!sb) return;
+
+  try {
+    // Active Users (all profiles)
+    const { count: userCount } = await sb.from('profiles').select('*', { count: 'exact', head: true });
+
+    // Registered Students
+    const { count: studentCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
+
+    // Active Groups (as proxy for projects)
+    const { count: groupCount } = await sb.from('groups').select('*', { count: 'exact', head: true });
+
+    // Supervisors
+    const { count: supCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'supervisor');
+
+    // Update stat cards
+    const stats = document.querySelectorAll('.card.stat');
+    if (stats[0]) { stats[0].querySelector('.value').textContent = userCount || 0; stats[0].querySelector('.sub').textContent = 'Total registered accounts'; }
+    if (stats[1]) { stats[1].querySelector('.value').textContent = studentCount || 0; stats[1].querySelector('.sub').textContent = 'Student accounts'; }
+    if (stats[2]) { stats[2].querySelector('.value').textContent = groupCount || 0; stats[2].querySelector('.label').textContent = 'Active Groups'; stats[2].querySelector('.sub').textContent = 'Formed project groups'; }
+    if (stats[3]) { stats[3].querySelector('.value').textContent = supCount || 0; stats[3].querySelector('.label').textContent = 'Supervisors'; stats[3].querySelector('.sub').textContent = 'Assigned staff'; }
+
+    // KPI bars
+    const totalStudents = studentCount || 0;
+    const groupedStudents = groupCount ? groupCount * 4 : 0;
+    const regPct = totalStudents > 0 ? Math.min(100, Math.round((totalStudents / totalStudents) * 100)) : 0;
+
+    // Groups with supervisors
+    const { count: supGroups } = await sb.from('groups').select('*', { count: 'exact', head: true }).not('supervisor_id', 'is', null);
+    const supPct = groupCount > 0 ? Math.round(((supGroups || 0) / groupCount) * 100) : 0;
+
+    const kpiRows = document.querySelectorAll('.kpi-row');
+    const progBars = document.querySelectorAll('.progress span');
+    if (kpiRows[0]) { kpiRows[0].querySelector('strong').textContent = '100%'; }
+    if (progBars[0]) { progBars[0].style.width = '100%'; }
+    if (kpiRows[2]) { kpiRows[2].querySelector('strong').textContent = supPct + '%'; }
+    if (progBars[2]) { progBars[2].style.width = supPct + '%'; }
+
+  } catch (e) {
+    console.error('Dashboard stats error:', e);
+  }
+})();
+</script>
 </body>
 </html>
 
