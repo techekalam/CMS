@@ -29,11 +29,15 @@ _cmsAdminCheck();
 
 // Run when page is restored from bfcache (back button)
 window.addEventListener('pageshow', function(e) {
-  if (e.persisted) { _cmsAdminCheck(); }
+  if (e.persisted) {
+    document.documentElement.style.visibility = 'hidden';
+    _cmsAdminCheck();
+  }
 });
 
-// Disable bfcache on Firefox
+// Disable bfcache
 window.addEventListener('unload', function() {});
+window.addEventListener('pagehide', function() {});
 
 
 // ── Logout ───────────────────────────────────────────────────
