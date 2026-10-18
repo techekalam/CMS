@@ -488,6 +488,7 @@
                             <select id="program" class="reg-select" required>
                                 <option value="" disabled selected>Select your programme</option>
                                 <option value="bcs">BSc Computer Science (BCS)</option>
+                                <option value="bse">Bachelor of Software Engineering (BSE)</option>
                                 <option value="bit">Bachelor of Information Technology (BIT)</option>
                                 <option value="bdsai">BSc Data Science &amp; AI (BDSAI)</option>
                                 <option value="networking">Networking &amp; Cybersecurity</option>
@@ -580,6 +581,7 @@
             // Build review
             const programLabels = {
                 'bcs':          'BSc Computer Science (BCS)',
+                'bse':          'Bachelor of Software Engineering (BSE)',
                 'bit':          'Bachelor of Information Technology (BIT)',
                 'bdsai':        'BSc Data Science & AI (BDSAI)',
                 'networking':   'Networking & Cybersecurity'
@@ -631,7 +633,7 @@
 
             // Save the student to the database. The system then places them
             // into a group automatically (see database/schema.sql, section 14).
-            const COURSE_CODES = { bcs: 'BSCS', bit: 'BSIT', bdsai: 'BDSAI', networking: 'NETSEC' };
+            const COURSE_CODES = { bcs: 'BSCS', bse: 'BSSE', bit: 'BSIT', bdsai: 'BDSAI', networking: 'NETSEC' };
             const sb = window.CMS_SB && window.CMS_SB.client();
             if (!sb) { alert('Could not reach the server. Please check your connection and try again.'); return; }
 
