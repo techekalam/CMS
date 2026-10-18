@@ -440,10 +440,15 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 480px) {
-            .login-nav { padding: 12px 20px; }
-            .login-card-top { padding: 24px 20px; }
-            .login-body { padding: 20px; }
-            .otp-digit { width: 42px; height: 50px; font-size: 20px; }
+            .login-nav { padding: 10px 14px; }
+            .login-nav-logo { height: 32px; width: 32px; }
+            .login-brand-title { font-size: 11px; }
+            .login-brand-sub { font-size: 9px; }
+            .login-nav-actions { gap: 8px; }
+            .btn-nav-login, .btn-nav-register { padding: 7px 14px; font-size: 12px; }
+            .login-card-top { padding: 20px 16px; }
+            .login-body { padding: 18px 16px; }
+            .otp-digit { width: 38px; height: 46px; font-size: 18px; }
         }
     </style>
 </head>
@@ -842,7 +847,7 @@
         // â”€â”€ STUDENT â†’ OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         showMsg('msg1', 'Sending sign-in codeâ€¦', 'info');
         setBusy1(true);
-        const { error } = await sb.auth.signInWithOtp({ email: emailRaw, options: { shouldCreateUser: false } });
+        const { error } = await sb.auth.signInWithOtp({ email: emailRaw, options: { shouldCreateUser: true } });
         setBusy1(false);
 
         if (error) {
@@ -960,7 +965,7 @@
         const btn = document.getElementById('resendBtn');
         btn.disabled = true;
         showMsg('msg2', 'Resending codeâ€¦', 'info');
-        const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options: { shouldCreateUser: false } });
+        const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options: { shouldCreateUser: true } });
         if (error) {
             btn.disabled = false;
             const msg = (error.message || '').toLowerCase();
