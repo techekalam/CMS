@@ -43,6 +43,13 @@ function _clearFields(ids) {
   });
 }
 
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
 // ─── Load records into a table ──────────────────────────────
 
 async function _loadTable(tableId, countId, rows) {
@@ -310,6 +317,213 @@ async function adminCreateStudent(btn) {
   } catch (e) {
     console.error('[Admin] createStudent:', e);
     showToast('Error: ' + e.message, 'error');
+  } finally {
+    _setBtn(btn, false);
+  }
+}
+
+// ─── CSV Student Import & Processing ────────────────────────
+let _parsedStudentRecords = [];
+
+function adminDownloadCsvTemplate() {
+  const csvContent = "Student ID,Full Name,Programme,Email\r\n"
+    + "2024-BCS-001,John Doe,BSCS,2024-bcs-001@student.cavendish.ac.ug\r\n"
+    + "2024-BIT-002,Jane Namubiru,BIT,2024-bit-002@student.cavendish.ac.ug\r\n"
+    + "2024-BSE-003,Alex Mukasa,BSE,2024-bse-003@student.cavendish.ac.ug\r\n"
+    + "2024-BCS-004,Sarah Akello,BSCS,2024-bcs-004@student.cavendish.ac.ug\r\n";
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'students_import_template.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function _parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (lines.length === 0) return [];
+
+  function parseLine(line) {
+    const row = [];
+    let insideQuote = false;
+    let entry = '';
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (insideQuote && line[i + 1] === '"') {
+          entry += '"';
+          i++;
+        } else {
+          insideQuote = !insideQuote;
+        }
+      } else if (c === ',' && !insideQuote) {
+        row.push(entry.trim());
+        entry = '';
+      } else {
+        entry += c;
+      }
+    }
+    row.push(entry.trim());
+    return row;
+  }
+
+  const rawHeaders = parseLine(lines[0]).map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''));
+  let idIdx = rawHeaders.findIndex(h => h.includes('id') || h.includes('reg') || h.includes('code') || h.includes('student'));
+  let nameIdx = rawHeaders.findIndex(h => h.includes('name') || h.includes('full') || h.includes('studentname'));
+  let progIdx = rawHeaders.findIndex(h => h.includes('program') || h.includes('course') || h.includes('dept'));
+  let emailIdx = rawHeaders.findIndex(h => h.includes('email') || h.includes('mail'));
+
+  if (idIdx === -1 && rawHeaders.length > 0) idIdx = 0;
+  if (nameIdx === -1 && rawHeaders.length > 1) nameIdx = 1;
+  if (progIdx === -1 && rawHeaders.length > 2) progIdx = 2;
+  if (emailIdx === -1 && rawHeaders.length > 3) emailIdx = 3;
+
+  const records = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseLine(lines[i]);
+    if (cols.length === 0 || cols.every(c => !c)) continue;
+    const studentId = idIdx !== -1 && cols[idIdx] ? cols[idIdx].trim() : '';
+    const name = nameIdx !== -1 && cols[nameIdx] ? cols[nameIdx].trim() : '';
+    const prog = progIdx !== -1 && cols[progIdx] ? cols[progIdx].trim() : 'BSCS';
+    let email = emailIdx !== -1 && cols[emailIdx] ? cols[emailIdx].trim().toLowerCase() : '';
+
+    if (!studentId && !name) continue;
+
+    if (!email) {
+      const cleanId = (studentId || name.replace(/\s+/g, '')).toLowerCase().replace(/[^a-z0-9]/g, '');
+      email = cleanId + '@student.cavendish.ac.ug';
+    }
+
+    records.push({
+      student_id: studentId || ('STU-' + Math.floor(1000 + Math.random() * 9000)),
+      name: name || studentId,
+      programme: prog || 'BSCS',
+      email: email
+    });
+  }
+  return records;
+}
+
+function adminHandleCsvFileSelect(input) {
+  const file = input.files && input.files[0];
+  const msgEl = document.getElementById('csvImportMsg');
+  const previewArea = document.getElementById('csvPreviewArea');
+  const previewTbody = document.querySelector('#csvPreviewTable tbody');
+  const previewCount = document.getElementById('csvPreviewCount');
+  const btn = document.getElementById('btnExecuteCsvImport');
+
+  _parsedStudentRecords = [];
+  if (btn) btn.disabled = true;
+
+  if (!file) {
+    if (previewArea) previewArea.style.display = 'none';
+    if (msgEl) msgEl.style.display = 'none';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const content = e.target.result;
+      const records = _parseCsv(content);
+      if (!records || records.length === 0) {
+        if (msgEl) {
+          msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;font-weight:600;">No valid student rows found in "${escHtml(file.name)}". Please ensure headers: Student ID, Full Name, Programme.</span>`;
+          msgEl.style.display = 'block';
+        }
+        if (previewArea) previewArea.style.display = 'none';
+        return;
+      }
+
+      _parsedStudentRecords = records;
+
+      if (msgEl) {
+        msgEl.innerHTML = `<span style="color:#16a34a;font-size:12px;font-weight:600;">&#10003; Successfully parsed ${records.length} student record${records.length > 1 ? 's' : ''} from "${escHtml(file.name)}". Ready to import.</span>`;
+        msgEl.style.display = 'block';
+      }
+
+      if (previewTbody) {
+        const previewRows = records.slice(0, 5).map(r => `
+          <tr>
+            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.student_id)}</td>
+            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;font-weight:600;">${escHtml(r.name)}</td>
+            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.programme)}</td>
+            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;color:#64748b;">${escHtml(r.email)}</td>
+          </tr>
+        `).join('');
+        previewTbody.innerHTML = previewRows;
+      }
+      if (previewCount) {
+        previewCount.textContent = `${records.length} record${records.length > 1 ? 's' : ''}`;
+      }
+      if (previewArea) previewArea.style.display = 'block';
+      if (btn) btn.disabled = false;
+    } catch (err) {
+      console.error('CSV parse error:', err);
+      if (msgEl) {
+        msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;font-weight:600;">Failed to read file: ${escHtml(err.message)}</span>`;
+        msgEl.style.display = 'block';
+      }
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function adminExecuteCsvImport(btn) {
+  if (!_parsedStudentRecords || _parsedStudentRecords.length === 0) {
+    showToast('Please select a valid CSV file first', 'error');
+    return;
+  }
+
+  _setBtn(btn, true);
+  const sb = _sb();
+  if (!sb) {
+    showToast('Database connection not available', 'error');
+    _setBtn(btn, false);
+    return;
+  }
+
+  try {
+    const toInsert = _parsedStudentRecords.map(r => ({
+      student_id: r.student_id,
+      name: r.name,
+      programme: r.programme,
+      email: r.email,
+      role: 'student',
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    // Batch upsert into profiles by unique email
+    const { data, error } = await sb
+      .from('profiles')
+      .upsert(toInsert, { onConflict: 'email' })
+      .select('id, name');
+
+    if (error) throw error;
+
+    const count = data ? data.length : toInsert.length;
+    showToast(`Successfully imported ${count} student${count !== 1 ? 's' : ''}!`, 'success');
+
+    // Clean up modal state
+    _parsedStudentRecords = [];
+    const fileInp = document.getElementById('studentCsvFileInput');
+    if (fileInp) fileInp.value = '';
+    const previewArea = document.getElementById('csvPreviewArea');
+    if (previewArea) previewArea.style.display = 'none';
+    const msgEl = document.getElementById('csvImportMsg');
+    if (msgEl) msgEl.style.display = 'none';
+    _closeModal(btn);
+
+    // Refresh students table
+    adminLoadStudents();
+  } catch (err) {
+    console.error('Import error:', err);
+    showToast('Import failed: ' + (err.message || 'Unknown error'), 'error');
   } finally {
     _setBtn(btn, false);
   }

@@ -343,17 +343,17 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
       </div>
       <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:560px">
         <div class="chat-head">
-          <div class="chat-icon">ðŸ’¬</div>
+          <div class="chat-icon">&#128172;</div>
           <div style="flex:1">
             <div style="font-weight:700;font-size:14px">Group Chat</div>
             <div style="font-size:11px;color:#9FB0C8" id="chatSubtitle">Your team conversation</div>
           </div>
-          <span class="chat-online">â— Online</span>
+          <span class="chat-online"><span style="color:#22c55e;">&#9679;</span> Online</span>
         </div>
         <div class="chat-body" id="chatBody"></div>
         <form class="chat-input-row" onsubmit="sendChat(event)">
-          <input id="chatInput" placeholder="Type a message..." autocomplete="off">
-          <button type="submit" class="chat-send">Send</button>
+          <input id="chatInput" placeholder="Type a message to the group..." autocomplete="off">
+          <button type="submit" class="chat-send" title="Send message">&#10148;</button>
         </form>
       </div>
     </div>
@@ -373,47 +373,214 @@ try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
 // ---- Header identity: read from session or fallback ----
 const SUPERVISOR_NAME = localStorage.getItem('cms_user_name') || '';
 const SUPERVISOR_ID = localStorage.getItem('cms_logged_user') || '';
-document.getElementById('supName').textContent = SUPERVISOR_NAME;
-document.getElementById('supId').textContent = SUPERVISOR_ID;
+let supervisorProfile = null;
+document.getElementById('supName').textContent = SUPERVISOR_NAME || 'Faculty Supervisor';
+document.getElementById('supId').textContent = SUPERVISOR_ID || 'Supervisor';
 
 // ---- Data arrays (populated from Supabase on load) ----
 let students = [];
 let documents = [];
+let allGroups = [];
+
+// ---- Helper: HTML escape ----
+function escHtml(str){
+  if(!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
 
 // ---- Group Chat ----
-let chats = {}; // { groupNumber: [{from:'me'|'them', text, time}] }
-function groupList(){ return [...new Set(students.map(s=>s.group))]; }
+let chats = {}; // { groupNumber: [{id, sender_id, sender_name, text, created_at}] }
+let activeChatChannel = null;
+let currentChatGroup = '';
+
+function groupList(){
+  const fromStudents = students.map(s => s.group).filter(g => g && g !== '&mdash;' && g !== '—');
+  const fromGroups = allGroups.map(g => g.group_number).filter(Boolean);
+  return [...new Set([...fromGroups, ...fromStudents])];
+}
+
 function populateChatGroups(){
   const sel = document.getElementById('chatGroupSelect');
-  sel.innerHTML = groupList().map(g=>`<option value="${g}">${g}</option>`).join('');
-  sel.onchange = renderChat;
+  if(!sel) return;
+
+  let groups = [];
+  if (allGroups && allGroups.length > 0) {
+    const myId = (supervisorProfile?.id || SUPERVISOR_ID || '').toLowerCase();
+    const myName = (SUPERVISOR_NAME || '').toLowerCase();
+    const assigned = allGroups.filter(g => 
+      (g.supervisor_id && g.supervisor_id.toLowerCase() === myId) ||
+      (g.supervisor_name && myName && g.supervisor_name.toLowerCase().includes(myName)) ||
+      (g.supervisor_id && g.supervisor_id === SUPERVISOR_ID)
+    );
+    groups = assigned.length > 0 ? assigned : allGroups;
+  } else {
+    groups = groupList().map(g => ({ group_number: g, project_title: '' }));
+  }
+
+  if (groups.length === 0) {
+    sel.innerHTML = '<option value="">No Groups Available</option>';
+    renderChat();
+    return;
+  }
+
+  sel.innerHTML = groups.map(g => {
+    const title = g.project_title ? ` — ${g.project_title}` : '';
+    return `<option value="${g.group_number}">${escHtml(g.group_number + title)}</option>`;
+  }).join('');
+
+  sel.onchange = () => {
+    loadGroupChat(sel.value);
+  };
+
+  const initialGroup = sel.value;
+  if (initialGroup && initialGroup !== currentChatGroup) {
+    loadGroupChat(initialGroup);
+  } else {
+    renderChat();
+  }
 }
+
+async function loadGroupChat(groupNumber){
+  if(!groupNumber) return;
+  currentChatGroup = groupNumber;
+  const body = document.getElementById('chatBody');
+  if(body && (!chats[groupNumber] || chats[groupNumber].length === 0)){
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px;">Loading messages...</div>';
+  }
+
+  if(sb){
+    try {
+      const { data: msgs, error } = await sb
+        .from('messages')
+        .select('*')
+        .eq('group_number', groupNumber)
+        .order('created_at', { ascending: true });
+      if(!error && msgs){
+        chats[groupNumber] = msgs;
+      }
+    } catch(err) {
+      console.warn('Failed to load chat messages:', err);
+    }
+  }
+
+  renderChat();
+
+  // Set up Supabase Realtime subscription for incoming messages
+  if(sb){
+    if(activeChatChannel){
+      try { sb.removeChannel(activeChatChannel); } catch(e) {}
+      activeChatChannel = null;
+    }
+    try {
+      activeChatChannel = sb.channel('sup-chat-' + groupNumber)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: 'group_number=eq.' + groupNumber
+        }, payload => {
+          if(!chats[groupNumber]) chats[groupNumber] = [];
+          const exists = chats[groupNumber].some(m => m.id === payload.new.id);
+          if(!exists){
+            chats[groupNumber].push(payload.new);
+            if(document.getElementById('chatGroupSelect').value === groupNumber){
+              renderChat();
+            }
+          }
+        })
+        .subscribe();
+    } catch(e) {
+      console.warn('Realtime chat channel notice:', e);
+    }
+  }
+}
+
 function renderChat(){
-  const g = document.getElementById('chatGroupSelect').value;
-  document.getElementById('chatSubtitle').textContent = g ? `Conversation with ${g}` : 'Your team conversation';
+  const sel = document.getElementById('chatGroupSelect');
+  const g = sel ? sel.value : '';
+  const subEl = document.getElementById('chatSubtitle');
+  if(subEl) subEl.textContent = g ? `Conversation with ${g}` : 'Your team conversation';
   const msgs = chats[g] || [];
   const body = document.getElementById('chatBody');
+  if(!body) return;
+
+  if(!g){
+    body.innerHTML = `<div class="chat-empty"><div class="bubble-ico">&#128172;</div><b>No group selected</b>Select a group to start chatting.</div>`;
+    return;
+  }
   if(!msgs.length){
-    body.innerHTML = `<div class="chat-empty"><div class="bubble-ico">ðŸ’¬</div><b>No messages yet</b>Start the conversation with your group members.</div>`;
+    body.innerHTML = `<div class="chat-empty"><div class="bubble-ico">&#128172;</div><b>No messages yet</b>Start the conversation with your group members.</div>`;
   } else {
-    body.innerHTML = msgs.map(m => `<div class="chat-msg ${m.from==='me'?'me':'them'}">${m.text}<div class="meta">${m.time}</div></div>`).join('');
+    body.innerHTML = msgs.map(m => {
+      const isMe = (m.sender_id === SUPERVISOR_ID || m.sender_id === 'supervisor' || (supervisorProfile && m.sender_id === supervisorProfile.id) || (SUPERVISOR_NAME && m.sender_name && m.sender_name.toLowerCase().includes(SUPERVISOR_NAME.toLowerCase())));
+      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : (m.time || '');
+      const senderHeader = isMe
+        ? '<div style="font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:2px">You (Supervisor)</div>'
+        : `<div style="font-size:11px;font-weight:700;color:var(--navy-solid);margin-bottom:2px">${escHtml(m.sender_name || 'Group Member')}</div>`;
+      return `<div class="chat-msg ${isMe ? 'me' : 'them'}">
+        ${senderHeader}
+        <div style="word-break:break-word;">${escHtml(m.text || '')}</div>
+        <div class="meta">${time}</div>
+      </div>`;
+    }).join('');
     body.scrollTop = body.scrollHeight;
   }
-  let total = 0; Object.values(chats).forEach(arr=>total+=arr.length);
-  document.getElementById('cardChatCount').textContent = total;
+  let total = 0; Object.values(chats).forEach(arr => total += arr.length);
+  const badgeEl = document.getElementById('cardChatCount');
+  if(badgeEl) badgeEl.textContent = total;
 }
+
 async function sendChat(e){
   e.preventDefault();
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
-  if(!text) return;
-  const g = document.getElementById('chatGroupSelect').value;
-  if(!chats[g]) chats[g] = [];
+  const sel = document.getElementById('chatGroupSelect');
+  const g = sel ? sel.value : '';
+  if(!text || !g) return;
+
+  input.value = '';
+  const now = new Date().toISOString();
   const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  chats[g].push({from:'me', text, time});
-  if(sb) await sb.from('messages').insert({group_number:g, sender_id:'supervisor', text, created_at:new Date().toISOString()});
-  input.value='';
+  const mySenderName = SUPERVISOR_NAME ? (SUPERVISOR_NAME.toLowerCase().includes('supervisor') ? SUPERVISOR_NAME : SUPERVISOR_NAME + ' (Supervisor)') : 'Faculty Supervisor';
+  const mySenderId = SUPERVISOR_ID || supervisorProfile?.id || 'supervisor';
+
+  const optimisticMsg = {
+    id: 'temp-' + Date.now(),
+    group_number: g,
+    sender_id: mySenderId,
+    sender_name: mySenderName,
+    text: text,
+    created_at: now,
+    time: time
+  };
+
+  if(!chats[g]) chats[g] = [];
+  chats[g].push(optimisticMsg);
   renderChat();
+
+  if(sb){
+    try {
+      const { data, error } = await sb.from('messages').insert({
+        group_number: g,
+        sender_id: mySenderId,
+        sender_name: mySenderName,
+        text: text,
+        created_at: now
+      }).select().single();
+      if(error){
+        console.error('Failed to send message:', error);
+        alert('Could not send message: ' + error.message);
+      } else if(data){
+        const idx = chats[g].findIndex(m => m.id === optimisticMsg.id);
+        if(idx !== -1) chats[g][idx] = data;
+        renderChat();
+      }
+    } catch(err) {
+      console.error('Send error:', err);
+    }
+  }
 }
 
 // ---- Navigation ----
@@ -424,7 +591,7 @@ function navigate(view){
   document.getElementById('side').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   window.scrollTo(0,0);
-  if(view==='chat'){ populateChatGroups(); renderChat(); }
+  if(view==='chat'){ populateChatGroups(); }
 }
 function toggleSide(){
   document.getElementById('side').classList.toggle('open');
@@ -696,11 +863,52 @@ async function loadData(){
         };
       });
     }
+
+    // 5. Fetch supervisor profile and groups
+    try {
+      if (SUPERVISOR_ID) {
+        const { data: prof } = await sb
+          .from('profiles')
+          .select('id, name, email')
+          .eq('email', SUPERVISOR_ID)
+          .maybeSingle();
+        if (prof) supervisorProfile = prof;
+      }
+    } catch(err) { console.warn('Profile fetch notice:', err); }
+
+    try {
+      const { data: grpData } = await sb
+        .from('groups')
+        .select('id, group_number, project_title, supervisor_id, supervisor_name')
+        .order('group_number');
+      if (grpData && grpData.length > 0) {
+        allGroups = grpData;
+      }
+    } catch(err) { console.warn('Groups fetch notice:', err); }
+
+    // 6. Preload recent messages for chat badge counter
+    try {
+      const { data: recentMsgs } = await sb
+        .from('messages')
+        .select('id, group_number, sender_id, sender_name, text, created_at')
+        .order('created_at', { ascending: true });
+      if (recentMsgs && recentMsgs.length > 0) {
+        recentMsgs.forEach(m => {
+          if (!chats[m.group_number]) chats[m.group_number] = [];
+          if (!chats[m.group_number].some(x => x.id === m.id)) {
+            chats[m.group_number].push(m);
+          }
+        });
+        const badgeEl = document.getElementById('cardChatCount');
+        if (badgeEl) badgeEl.textContent = recentMsgs.length;
+      }
+    } catch(err) { console.warn('Messages preload notice:', err); }
+
   }catch(e){
     console.warn('Supabase fetch notice:', e);
     banner('banner-dash','Could not reach Supabase. Check SUPABASE_URL/ANON_KEY and try again.', 'err');
   }
-  render(); renderDocs(); navigate('dashboard');
+  render(); renderDocs(); populateChatGroups(); navigate('dashboard');
 }
 loadData();
 </script>
