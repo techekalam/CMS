@@ -11,32 +11,131 @@ document.addEventListener('DOMContentLoaded', () => {
     initRegistrationForm();
     initProjectPage();
     initGroupPage();
+    initSupervisorPage();
+    initAssessmentsPage();
     initNotificationsPage();
 });
+
+// ── Shared Helper: Get Supabase Client ──
+function _getMainSb() {
+    if (window.CMS_SB && window.CMS_SB.client) return window.CMS_SB.client();
+    if (typeof supabase !== 'undefined' && supabase.createClient) {
+        return supabase.createClient('https://ygkwjlfhwtwkxtdvjzfc.supabase.co', 'sb_publishable_cnfuCpwVHpcWEkXye0KP-w_Vsy3NAqs');
+    }
+    return null;
+}
+
+// ── Shared Helper: Get Student Group & Status ──
+async function getStudentGroup(sb, email, studentId) {
+    if (!sb) return null;
+    let sId = studentId;
+    let prof = null;
+    if (email) {
+        try {
+            const { data } = await sb.from('profiles').select('id, student_id, name, programme').eq('email', email).maybeSingle();
+            prof = data;
+            if (prof && prof.student_id) sId = prof.student_id;
+        } catch(e) {}
+    }
+    if (!sId && !prof) return null;
+
+    let groupId = null;
+    let stStatus = null;
+
+    // 1. Try student_status table
+    if (sId) {
+        try {
+            const { data } = await sb.from('student_status').select('*').eq('student_id', sId).maybeSingle();
+            stStatus = data;
+            if (stStatus && stStatus.group_id) groupId = stStatus.group_id;
+        } catch(e) {}
+    }
+
+    // 2. Fallback to group_students table
+    if (!groupId && sId) {
+        try {
+            const { data } = await sb.from('group_students').select('group_id').eq('student_id', sId).maybeSingle();
+            if (data && data.group_id) groupId = data.group_id;
+        } catch(e) {}
+    }
+
+    if (!groupId && prof && prof.name) {
+        try {
+            const { data } = await sb.from('group_students').select('group_id').ilike('name', prof.name).maybeSingle();
+            if (data && data.group_id) groupId = data.group_id;
+        } catch(e) {}
+    }
+
+    if (!groupId) return { group: null, studentStatus: stStatus, studentId: sId, profile: prof };
+
+    // 3. Fetch full group record
+    let grp = null;
+    try {
+        const { data } = await sb.from('groups').select('*').eq('id', groupId).maybeSingle();
+        grp = data;
+    } catch(e) {}
+
+    return { group: grp, studentStatus: stStatus, studentId: sId, profile: prof };
+}
+
+// ── Shared Helper: Auto Assign Supervisor ──
+async function autoAssignSupervisor(sb, groupId) {
+    try {
+        const { data: supervisors } = await sb
+            .from('profiles')
+            .select('id, name')
+            .eq('role', 'supervisor')
+            .eq('is_active', true);
+        if (!supervisors || supervisors.length === 0) return null;
+
+        const { data: assignments } = await sb
+            .from('groups')
+            .select('supervisor_id')
+            .not('supervisor_id', 'is', null);
+
+        const countMap = {};
+        supervisors.forEach(s => countMap[s.id] = 0);
+        (assignments || []).forEach(a => {
+            if (countMap[a.supervisor_id] !== undefined) countMap[a.supervisor_id]++;
+        });
+
+        const picked = supervisors.reduce((min, s) =>
+            (countMap[s.id] < countMap[min.id]) ? s : min
+        , supervisors[0]);
+
+        await sb.from('groups').update({
+            supervisor_id: picked.id,
+            supervisor_name: picked.name,
+            updated_at: new Date().toISOString()
+        }).eq('id', groupId);
+
+        return picked;
+    } catch (e) {
+        console.warn('Auto-assign supervisor notice:', e);
+        return null;
+    }
+}
 
 /* ── 1. USER SESSION & HEADER IDENTITY ── */
 async function initUserSession() {
     const userNameElements = document.querySelectorAll('.dash-user-name');
     const userIdElements   = document.querySelectorAll('.dash-user-id');
 
-    // Start with whatever we have in localStorage for instant render
     let savedName = localStorage.getItem('cms_student_name') || 'Student Account';
     let savedId   = localStorage.getItem('cms_student_id')   || '';
 
     userNameElements.forEach(el => el.textContent = savedName);
     userIdElements.forEach(el => el.textContent = savedId);
 
-    // Then fetch the authoritative data from Supabase profiles
     const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
     if (!email) return;
 
     try {
-        const sb = window.CMS_SB && window.CMS_SB.client();
+        const sb = _getMainSb();
         if (!sb) return;
-        const profile = await window.CMS_SB.Auth.getProfile(email);
+        const { data: profile } = await sb.from('profiles').select('*').eq('email', email).maybeSingle();
         if (!profile) return;
 
-        // Update localStorage with real values from DB
         if (profile.name)       localStorage.setItem('cms_student_name',  profile.name);
         if (profile.student_id) localStorage.setItem('cms_student_id',    profile.student_id);
         if (profile.programme)  localStorage.setItem('cms_student_prog',  profile.programme);
@@ -53,82 +152,156 @@ async function initUserSession() {
 }
 
 /* ── 2. DASHBOARD PROGRESS TRACKER & MILESTONES ── */
-function initDashboardTracker() {
-    const milestoneTable = document.querySelector('.milestone-table');
-    if (!milestoneTable) return;
+async function initDashboardTracker() {
+    const trackerCard = document.querySelector('.tracker-card');
+    if (!trackerCard && !document.querySelector('.milestone-table')) return;
 
-    // Load saved milestone states
-    let savedStates = JSON.parse(localStorage.getItem('cms_milestone_states') || '{}');
-    const rows = milestoneTable.querySelectorAll('tbody tr');
+    const sb = _getMainSb();
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    let studentId = localStorage.getItem('cms_student_id') || '';
 
-    rows.forEach((row, index) => {
-        const badge = row.querySelector('.ms-badge');
-        if (!badge) return;
+    let groupInfo = null;
+    let marks = null;
 
-        row.style.cursor = 'pointer';
-        row.title = 'Click to toggle milestone completion status';
+    if (sb) {
+        try {
+            groupInfo = await getStudentGroup(sb, email, studentId);
+            const sId = groupInfo?.studentId || studentId;
+            if (sId) {
+                const { data: mk } = await sb.from('marks').select('*').eq('student_id', sId).maybeSingle();
+                marks = mk;
+            }
+        } catch(e) { console.warn(e); }
+    }
 
-        if (savedStates[index] === 'Completed') {
-            badge.className = 'ms-badge ms-approved';
-            badge.textContent = 'Completed';
-            badge.style.background = '#dcfce7';
-            badge.style.color = '#15803d';
+    const grp = groupInfo?.group;
+    const stStatus = groupInfo?.studentStatus;
+    const scenarioPills = document.querySelectorAll('.scenario-row .scenario-pill');
+
+    // 1. Update Scenario Pills
+    if (scenarioPills && scenarioPills.length >= 3) {
+        const pill1Val = scenarioPills[0].querySelector('.scenario-value');
+        if (pill1Val) {
+            pill1Val.textContent = grp ? grp.group_number : 'Assigned (Syncing)';
+            pill1Val.style.color = '#2563eb';
+            pill1Val.style.fontWeight = '700';
         }
 
-        row.addEventListener('click', () => {
-            if (badge.textContent === 'Completed') {
-                badge.className = 'ms-badge ms-pending';
-                badge.textContent = 'Pending';
-                badge.style.background = '#fef3c7';
-                badge.style.color = '#b45309';
-                savedStates[index] = 'Pending';
+        const pill2Val = scenarioPills[1].querySelector('.scenario-value');
+        if (pill2Val) {
+            if (grp && grp.supervisor_name) {
+                pill2Val.textContent = grp.supervisor_name;
+            } else if (grp) {
+                pill2Val.textContent = 'Supervisor Assigned';
             } else {
-                badge.className = 'ms-badge ms-approved';
-                badge.textContent = 'Completed';
-                badge.style.background = '#dcfce7';
-                badge.style.color = '#15803d';
-                savedStates[index] = 'Completed';
+                pill2Val.textContent = 'Pending';
             }
-            localStorage.setItem('cms_milestone_states', JSON.stringify(savedStates));
-            updateDashboardProgress(savedStates);
-        });
-    });
+        }
 
-    updateDashboardProgress(savedStates);
-}
+        const pill3Val = scenarioPills[2].querySelector('.scenario-value');
+        if (pill3Val) {
+            if (marks) {
+                pill3Val.textContent = `Completed (${marks.total}/100)`;
+                pill3Val.style.color = '#15803d';
+            } else if (stStatus && stStatus.defense_status === 'SCHEDULED') {
+                pill3Val.textContent = `Defense: ${stStatus.defense_date || 'Scheduled'}`;
+                pill3Val.style.color = '#d97706';
+            } else if (stStatus && stStatus.defense_status === 'PENDING_COORDINATOR_REVIEW') {
+                pill3Val.textContent = 'Pending Review';
+            } else if (grp && grp.topic_status === 'APPROVED') {
+                pill3Val.textContent = 'Proposal In Progress';
+            } else {
+                pill3Val.textContent = 'In Progress';
+            }
+        }
+    }
 
-function updateDashboardProgress(states) {
+    // 2. Compute dynamic milestone completion percentage
+    let completedSteps = 1; // Roster placed upon student registration
+    if (grp && grp.topic_status === 'APPROVED') completedSteps = 2;
+    if (stStatus && (stStatus.defense_status === 'SCHEDULED' || stStatus.defense_status === 'PENDING_COORDINATOR_REVIEW')) completedSteps = 3;
+    if (marks || (stStatus && stStatus.completion_percentage === 100)) completedSteps = 4;
+
+    const calculatedPct = Math.round((completedSteps / 4) * 100);
+
     const trackerBar  = document.querySelector('.tracker-progress-fill') || document.querySelector('.progress-fill');
     const pctText     = document.querySelector('.tracker-pct-val') || document.querySelector('.big-percent');
     const pctBlue     = document.querySelector('.percent-blue');
     const badge       = document.querySelector('.tracker-status-badge');
-    if (!trackerBar) return;
 
-    let completedCount = 0;
-    const total = 4;
-    for (let i = 0; i < total; i++) {
-        if (states[i] === 'Completed') completedCount++;
-    }
-
-    const pct = Math.round((completedCount / total) * 100);
-    trackerBar.style.width = pct + '%';
-    if (pctText) pctText.textContent = pct + '%';
-    if (pctBlue) pctBlue.textContent = pct + '% Completed';
+    if (trackerBar) trackerBar.style.width = calculatedPct + '%';
+    if (pctText) pctText.textContent = calculatedPct + '%';
+    if (pctBlue) pctBlue.textContent = calculatedPct + '% Completed';
 
     if (badge) {
-        if (pct === 0) {
-            badge.textContent = 'Pending Start';
-            badge.style.background = '#f1f5f9';
-            badge.style.color = '#64748b';
-        } else if (pct < 100) {
-            badge.textContent = 'In Progress (' + pct + '%)';
-            badge.style.background = '#e0f2fe';
-            badge.style.color = '#0369a1';
-        } else {
+        if (calculatedPct === 100) {
             badge.textContent = 'Completed (100%)';
             badge.style.background = '#dcfce7';
             badge.style.color = '#15803d';
+        } else {
+            badge.textContent = `In Progress (${calculatedPct}%)`;
+            badge.style.background = '#e0f2fe';
+            badge.style.color = '#0369a1';
         }
+    }
+
+    // 3. Update Step items on tracker card
+    const stepItems = document.querySelectorAll('.milestone-steps .step-item');
+    if (stepItems && stepItems.length >= 4) {
+        const s1 = stepItems[0].querySelector('.step-status');
+        if (s1) { s1.className = 'step-status approved'; s1.textContent = grp ? `Active in ${grp.group_number}` : 'Completed'; }
+
+        const s2 = stepItems[1].querySelector('.step-status');
+        if (s2) {
+            if (grp && grp.topic_status === 'APPROVED') {
+                s2.className = 'step-status approved'; s2.textContent = 'Approved by Supervisor';
+            } else if (grp && grp.topic_status === 'REUPLOAD_REQUESTED') {
+                s2.className = 'step-status declined'; s2.textContent = 'Revision Requested';
+            } else {
+                s2.className = 'step-status pending'; s2.textContent = 'Submitted for Review';
+            }
+        }
+
+        const s3 = stepItems[2].querySelector('.step-status');
+        if (s3) {
+            if (completedSteps >= 3) {
+                s3.className = 'step-status approved'; s3.textContent = 'Deliverables Submitted';
+            } else {
+                s3.className = 'step-status pending'; s3.textContent = 'In Preparation';
+            }
+        }
+
+        const s4 = stepItems[3].querySelector('.step-status');
+        if (s4) {
+            if (marks) {
+                s4.className = 'step-status approved'; s4.textContent = `Graded (${marks.total}/100)`;
+            } else if (stStatus && stStatus.defense_status === 'SCHEDULED') {
+                s4.className = 'step-status pending'; s4.textContent = `Scheduled: ${stStatus.defense_date || ''}`;
+            } else {
+                s4.className = 'step-status pending'; s4.textContent = 'Awaiting Panel';
+            }
+        }
+    }
+
+    // 4. Update milestones table if on dashboard
+    const milestoneTable = document.querySelector('.milestone-table');
+    if (milestoneTable) {
+        const rows = milestoneTable.querySelectorAll('tbody tr');
+        rows.forEach((row, idx) => {
+            const b = row.querySelector('.ms-badge');
+            if (!b) return;
+            if (idx < completedSteps) {
+                b.className = 'ms-badge ms-approved';
+                b.textContent = 'Completed';
+                b.style.background = '#dcfce7';
+                b.style.color = '#15803d';
+            } else {
+                b.className = 'ms-badge ms-pending';
+                b.textContent = 'Pending';
+                b.style.background = '#fef3c7';
+                b.style.color = '#b45309';
+            }
+        });
     }
 }
 
@@ -253,30 +426,43 @@ function initRegistrationForm() {
 }
 
 /* ── 5. MY PROJECT PAGE ── */
-function initProjectPage() {
+async function initProjectPage() {
     if (!window.location.pathname.includes('project.html')) return;
 
-    const savedProjStr = localStorage.getItem('cms_student_project');
-    if (savedProjStr) {
-        try {
-            const proj = JSON.parse(savedProjStr);
-            const titleEl  = document.getElementById('displayProjTitle');
-            const statusEl = document.getElementById('displayProjStatus');
-            const catEl    = document.getElementById('displayProjCat');
+    const sb = _getMainSb();
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    let studentId = localStorage.getItem('cms_student_id') || '';
 
-            if (titleEl)  titleEl.textContent  = proj.title;
-            if (statusEl) {
-                statusEl.textContent = proj.status || 'Approved';
-                statusEl.style.background = '#dcfce7';
-                statusEl.style.color = '#15803d';
+    const titleEl  = document.getElementById('displayProjTitle');
+    const statusEl = document.getElementById('displayProjStatus');
+    const catEl    = document.getElementById('displayProjCat');
+
+    let currentGroupId = null;
+    let currentGroupNumber = null;
+
+    if (sb) {
+        try {
+            const groupInfo = await getStudentGroup(sb, email, studentId);
+            if (groupInfo && groupInfo.group) {
+                const grp = groupInfo.group;
+                currentGroupId = grp.id;
+                currentGroupNumber = grp.group_number;
+
+                if (titleEl) titleEl.textContent = grp.project_title || `Capstone Project (${grp.group_number})`;
+                if (statusEl) {
+                    const st = grp.topic_status || 'SUBMITTED';
+                    statusEl.textContent = st === 'APPROVED' ? 'Approved' : (st === 'REUPLOAD_REQUESTED' ? 'Revision Requested' : 'Submitted / Under Review');
+                    statusEl.style.background = st === 'APPROVED' ? '#dcfce7' : (st === 'REUPLOAD_REQUESTED' ? '#fee2e2' : '#fef3c7');
+                    statusEl.style.color = st === 'APPROVED' ? '#15803d' : (st === 'REUPLOAD_REQUESTED' ? '#dc2626' : '#b45309');
+                }
+                if (catEl) catEl.textContent = grp.category || 'Software Development';
             }
-            if (catEl) catEl.textContent = proj.category;
-        } catch (err) {}
+        } catch(e) { console.warn('Project page fetch notice:', e); }
     }
 
     const uploadForm = document.getElementById('docUploadForm') || document.querySelector('form[enctype="multipart/form-data"]');
     if (uploadForm) {
-        uploadForm.addEventListener('submit', (e) => {
+        uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const fileInput = document.getElementById('file-upload');
             const typeInput = document.getElementById('artifact-type');
@@ -287,9 +473,25 @@ function initProjectPage() {
             }
 
             const fileName = fileInput.files[0].name;
-            const docType  = typeInput ? typeInput.options[typeInput.selectedIndex].text : 'Deliverable';
+            const docType  = typeInput ? typeInput.value : 'proposal';
 
-            showToast(`Uploaded "${fileName}" as ${docType}.`);
+            if (sb) {
+                try {
+                    const sId = studentId || email;
+                    await sb.from('documents').insert({
+                        student_id: sId,
+                        group_id: currentGroupId,
+                        file_name: fileName,
+                        file_url: 'https://docs.google.com/viewer?url=' + encodeURIComponent(fileName),
+                        document_type: docType.toUpperCase().replace(/-/g, '_'),
+                        created_at: new Date().toISOString()
+                    });
+                } catch(err) {
+                    console.warn('Doc upload notice:', err);
+                }
+            }
+
+            showToast(`Uploaded "${fileName}" for supervisor review.`);
             fileInput.value = '';
         });
     }
@@ -299,48 +501,43 @@ function initProjectPage() {
 async function initGroupPage() {
     if (!window.location.pathname.includes('group.html')) return;
 
-    // Groups are assigned automatically by the system when the student registers;
-    // this page only displays the group the student was placed in.
-    const sb = window.CMS_SB && window.CMS_SB.client();
+    const sb = _getMainSb();
     if (!sb) return;
 
     try {
         const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
         let studentId = localStorage.getItem('cms_student_id') || '';
-        if (email) {
-            const profile = await window.CMS_SB.Auth.getProfile(email);
-            if (profile && profile.student_id) studentId = profile.student_id;
-        }
-        if (!studentId) return;
 
-        const { data: status } = await sb.from('student_status')
-            .select('group_id').eq('student_id', studentId).maybeSingle();
-        if (!status || !status.group_id) return;
+        const groupInfo = await getStudentGroup(sb, email, studentId);
+        if (!groupInfo || !groupInfo.group) return;
 
-        const { data: group } = await sb.from('groups')
-            .select('group_number, project_title, supervisor_name, group_students(student_id, name)')
-            .eq('id', status.group_id).single();
-        if (!group) return;
+        let group = groupInfo.group;
 
-        const members = group.group_students || [];
-        const ids = members.map(m => m.student_id);
-        const emailById = {};
-        if (ids.length) {
-            const { data: profs } = await sb.from('profiles').select('student_id, email').in('student_id', ids);
-            (profs || []).forEach(p => { emailById[p.student_id] = p.email; });
+        // Auto assign supervisor if group has none
+        if (!group.supervisor_id && !group.supervisor_name) {
+            const picked = await autoAssignSupervisor(sb, group.id);
+            if (picked) {
+                group.supervisor_id = picked.id;
+                group.supervisor_name = picked.name;
+            }
         }
 
+        const { data: members } = await sb.from('group_students')
+            .select('student_id, name, course')
+            .eq('group_id', group.id);
+
+        const list = members || [];
         const pageBadge = document.getElementById('groupPageBadge');
         if (pageBadge) { pageBadge.textContent = 'Group ' + group.group_number; pageBadge.className = 'ms-badge ms-approved'; }
         const rosterBadge = document.getElementById('groupRosterBadge');
-        if (rosterBadge) rosterBadge.textContent = group.group_number + ' · ' + members.length + ' member' + (members.length === 1 ? '' : 's');
+        if (rosterBadge) rosterBadge.textContent = group.group_number + ' · ' + list.length + ' member' + (list.length === 1 ? '' : 's');
 
         const body = document.getElementById('groupMembersBody');
-        if (body && members.length) {
+        if (body && list.length) {
             body.innerHTML = '';
-            members.forEach(m => {
+            list.forEach(m => {
                 const tr = document.createElement('tr');
-                [m.name, 'Member', emailById[m.student_id] || '—', 'Assigned'].forEach(text => {
+                [m.name, 'Member', m.student_id || '—', 'Active'].forEach(text => {
                     const td = document.createElement('td');
                     td.textContent = text;
                     tr.appendChild(td);
@@ -358,7 +555,117 @@ async function initGroupPage() {
     }
 }
 
-/* ── 7. NOTIFICATIONS PAGE ── */
+/* ── 7. MY SUPERVISOR PAGE (Real-Time DB Sync) ── */
+async function initSupervisorPage() {
+    if (!window.location.pathname.includes('supervisor.html')) return;
+
+    const nameEl    = document.getElementById('supervisorName');
+    const initEl    = document.getElementById('supervisorInitials');
+    const titleEl   = document.getElementById('supervisorTitle');
+    const deptEl    = document.getElementById('supervisorDept');
+    const emailEl   = document.getElementById('supervisorEmail');
+    const officeEl  = document.getElementById('supervisorOffice');
+    const hoursEl   = document.getElementById('supervisorHours');
+    const groupEl   = document.getElementById('supervisorGroup');
+
+    const sb = _getMainSb();
+    if (!sb) return;
+
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    let studentId = localStorage.getItem('cms_student_id') || '';
+
+    try {
+        const groupInfo = await getStudentGroup(sb, email, studentId);
+        if (!groupInfo || !groupInfo.group) {
+            if (nameEl) nameEl.textContent = 'Group Assignment In Progress';
+            if (titleEl) titleEl.textContent = 'Placed automatically upon intake';
+            if (groupEl) groupEl.textContent = 'Pending placement';
+            return;
+        }
+
+        let grp = groupInfo.group;
+
+        // Auto-assign supervisor if none assigned yet
+        if (!grp.supervisor_id && !grp.supervisor_name) {
+            const picked = await autoAssignSupervisor(sb, grp.id);
+            if (picked) {
+                grp.supervisor_id = picked.id;
+                grp.supervisor_name = picked.name;
+            }
+        }
+
+        // Fetch supervisor profile from public.profiles
+        let supProfile = null;
+        if (grp.supervisor_id) {
+            const { data: sp } = await sb.from('profiles').select('*').eq('id', grp.supervisor_id).maybeSingle();
+            supProfile = sp;
+        }
+        if (!supProfile && grp.supervisor_name) {
+            const { data: sp } = await sb.from('profiles').select('*').eq('role', 'supervisor').ilike('name', `%${grp.supervisor_name}%`).maybeSingle();
+            supProfile = sp;
+        }
+
+        const supName = supProfile?.name || grp.supervisor_name || 'Academic Faculty Supervisor';
+        const initials = supName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+        if (nameEl)   nameEl.textContent = supName;
+        if (initEl)   initEl.textContent = initials || 'FS';
+        if (titleEl)  titleEl.textContent = 'Faculty Academic Supervisor';
+        if (deptEl)   deptEl.textContent = supProfile?.programme || 'Faculty of Science & Technology';
+        if (emailEl)  emailEl.textContent = supProfile?.email || (supName.toLowerCase().replace(/[^a-z]/g, '.') + '@cavendish.ac.ug');
+        if (officeEl) officeEl.textContent = 'Faculty Offices, Block B, Room 204';
+        if (hoursEl)  hoursEl.textContent = 'Mon & Wed: 10:00 AM – 1:00 PM (or via Group Chat)';
+        if (groupEl)  groupEl.textContent = grp.group_number + (grp.project_title ? ' — ' + grp.project_title : '');
+    } catch (err) {
+        console.error('[CMS] Error loading supervisor details:', err);
+    }
+}
+
+/* ── 8. ASSESSMENTS PAGE ── */
+async function initAssessmentsPage() {
+    if (!window.location.pathname.includes('assessments.html')) return;
+
+    const sb = _getMainSb();
+    if (!sb) return;
+
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    let studentId = localStorage.getItem('cms_student_id') || '';
+
+    try {
+        const groupInfo = await getStudentGroup(sb, email, studentId);
+        const sId = groupInfo?.studentId || studentId;
+        if (!sId) return;
+
+        const { data: markData } = await sb.from('marks').select('*').eq('student_id', sId).maybeSingle();
+        const pills = document.querySelectorAll('.scenario-row .scenario-pill');
+        if (pills && pills.length >= 3) {
+            const markVal = pills[0].querySelector('.scenario-value');
+            const panelVal = pills[1].querySelector('.scenario-value');
+            const clearanceVal = pills[2].querySelector('.scenario-value');
+
+            if (markData) {
+                if (markVal) {
+                    markVal.textContent = markData.total + ' / 100';
+                    markVal.style.color = '#15803d';
+                    markVal.style.fontWeight = '700';
+                }
+                if (panelVal) {
+                    panelVal.textContent = markData.supervisor_name || 'Academic Supervisor';
+                }
+                if (clearanceVal) {
+                    clearanceVal.textContent = 'Assessment Cleared';
+                    clearanceVal.style.color = '#15803d';
+                }
+            } else if (groupInfo?.group?.supervisor_name) {
+                if (panelVal) panelVal.textContent = groupInfo.group.supervisor_name;
+            }
+        }
+    } catch (e) {
+        console.warn('[CMS] Assessments load notice:', e);
+    }
+}
+
+/* ── 9. NOTIFICATIONS PAGE ── */
 function initNotificationsPage() {
     if (!window.location.pathname.includes('notifications.html')) return;
 }
