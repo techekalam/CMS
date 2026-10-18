@@ -1,19 +1,33 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <script>
+  function cmsLogout(){
+    try{localStorage.clear();sessionStorage.clear();}catch(e){}
+    window.location.replace('../login.html');
+  }
   (function(){
-    function _g(){
+    function _chk(){
       document.documentElement.style.visibility='hidden';
       var r=localStorage.getItem('cms_user_role');
       var u=localStorage.getItem('cms_logged_user');
-      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      if(!r||!u||r!=='admin'){
+        window.location.replace('../login.html');
+        return;
+      }
       document.documentElement.style.visibility='visible';
     }
-    _g();
-    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    _chk();
+    window.addEventListener('pageshow',function(){_chk();});
     window.addEventListener('unload',function(){});
     window.addEventListener('pagehide',function(){});
+    document.addEventListener('DOMContentLoaded',function(){
+      document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
+        if(link.textContent.trim().toLowerCase().includes('logout')){
+          link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+        }
+      });
+    });
   })();
 </script>
 <meta charset="UTF-8">
@@ -25,22 +39,7 @@
 </head>
 <body>
 <header class="dash-header">
-<script>
-  (function(){
-    function _g(){
-      document.documentElement.style.visibility='hidden';
-      var r=localStorage.getItem('cms_user_role');
-      var u=localStorage.getItem('cms_logged_user');
-      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
-      document.documentElement.style.visibility='visible';
-    }
-    _g();
-    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
-    window.addEventListener('unload',function(){});
-    window.addEventListener('pagehide',function(){});
-  })();
-</script>
-    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active')"><span></span><span></span><span></span></button><a href="../index.html" class="dash-brand-link">
+    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active')"><span></span><span></span><span></span></button><a href="admin-dashboard.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
                 <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
@@ -56,7 +55,7 @@
                 <span class="dash-user-id">Central Administration</span>
             </div>
         </div>
-        <a href="../login.html" class="btn-header-logout">Logout</a>
+        <a href="../login.html" class="btn-header-logout" onclick="cmsLogout();return false;">Logout</a>
     </div>
 </header>
 <div class="app"><div class="sidebar-overlay" id="sidebarOverlay" onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('active')"></div><aside class="sidebar">
@@ -80,7 +79,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Historical Project Repository</h2><p>Search and preserve completed capstone records used for institutional history and duplicate-project detection.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#historyTable" placeholder="Search historical projects..."><select class="field"><option>All academic years</option><option>2024/25</option><option>2023/24</option><option>2022/23</option></select><button class="btn" data-modal-open="importHistoryModal">Import History</button><button class="btn btn-primary" onclick="showToast('Exporting repository data...','info')">Export Repository</button></div><div class="card"><div class="table-wrap"><table id="historyTable"><thead><tr><th>Record ID</th><th>Project Title</th><th>Program</th><th>Academic Year</th><th>Student / Lead</th><th>Status</th><th>Index</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div><div style='margin-top:15px' class='notice'><strong>Duplicate-project protection:</strong> Historical records are searchable so administrators can identify repeated or substantially similar project titles before approval.</div><div class="modal-backdrop" id="importHistoryModal"><div class="modal"><div class="modal-head"><h3>Import Historical Records</h3><button class="close" data-modal-close>Ã—</button></div><div class="modal-body"><div class="notice">Upload a CSV file containing historical project records. Records will be validated before import.</div><div style="height:14px"></div><div class="input-group"><label>Academic year</label><select class="field"><option>2024/25</option><option>2023/24</option><option>2022/23</option></select></div><div style="height:10px"></div><div class="input-group"><label>CSV file</label><input class="field" type="file" accept=".csv"></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Historical records imported successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Import Records</button></div></div></div></section>
+    <section class="page"><div class="page-head"><div><h2>Historical Project Repository</h2><p>Search and preserve completed capstone records used for institutional history and duplicate-project detection.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#historyTable" placeholder="Search historical projects..."><select class="field"><option>All academic years</option><option>2024/25</option><option>2023/24</option><option>2022/23</option></select><button class="btn" data-modal-open="importHistoryModal">Import History</button><button class="btn btn-primary" onclick="showToast('Exporting repository data...','info')">Export Repository</button></div><div class="card"><div class="table-wrap"><table id="historyTable"><thead><tr><th>Record ID</th><th>Project Title</th><th>Program</th><th>Academic Year</th><th>Student / Lead</th><th>Status</th><th>Index</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div style='margin-top:15px' class='notice'><strong>Duplicate-project protection:</strong> Historical records are searchable so administrators can identify repeated or substantially similar project titles before approval.</div><div class="modal-backdrop" id="importHistoryModal"><div class="modal"><div class="modal-head"><h3>Import Historical Records</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="notice">Upload a CSV file containing historical project records. Records will be validated before import.</div><div style="height:14px"></div><div class="input-group"><label>Academic year</label><select class="field"><option>2024/25</option><option>2023/24</option><option>2022/23</option></select></div><div style="height:10px"></div><div class="input-group"><label>CSV file</label><input class="field" type="file" accept=".csv"></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="showToast('Historical records imported successfully','success');this.closest('.modal-backdrop').classList.remove('show')">Import Records</button></div></div></div></section>
 </main>
 </div>
 <script src="assets/admin.js"></script>

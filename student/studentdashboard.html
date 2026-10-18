@@ -1,40 +1,41 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  function cmsLogout(){
+    try{localStorage.clear();sessionStorage.clear();}catch(e){}
+    window.location.replace('../login.html');
+  }
+  (function(){
+    function _chk(){
+      document.documentElement.style.visibility='hidden';
+      var r=localStorage.getItem('cms_user_role');
+      var u=localStorage.getItem('cms_logged_user');
+      if(!r||!u||r!=='student'){
+        window.location.replace('../login.html');
+        return;
+      }
+      document.documentElement.style.visibility='visible';
+    }
+    _chk();
+    window.addEventListener('pageshow',function(){_chk();});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+    document.addEventListener('DOMContentLoaded',function(){
+      document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
+        if(link.textContent.trim().toLowerCase().includes('logout')){
+          link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+        }
+      });
+    });
+  })();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
-    <script>
-      document.documentElement.style.visibility='hidden';
-      function _stuCheck(){
-        var role=localStorage.getItem('cms_user_role');
-        var user=localStorage.getItem('cms_logged_user');
-        if(!role||!user||role!=='student'){window.location.replace('../login.html');}
-        else{document.documentElement.style.visibility='visible';}
-      }
-      _stuCheck();
-      window.addEventListener('pageshow',function(e){
-        if(e.persisted){
-          document.documentElement.style.visibility='hidden';
-          _stuCheck();
-        }
-      });
-      window.addEventListener('unload',function(){});
-      window.addEventListener('pagehide',function(){});
-      function cmsLogout(){
-        ['cms_logged_user','cms_user_role','cms_user_name','cms_student_name','cms_student_id'].forEach(function(k){localStorage.removeItem(k);});
-        window.location.replace('../login.html');
-      }
-      document.addEventListener('DOMContentLoaded',function(){
-        document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
-          if(link.textContent.trim().toLowerCase().includes('logout')){
-            link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
-          }
-        });
-      });
-    </script>
-    <title>Student Dashboard â€“ Capstone Management System</title>
+    
+    <title>Student Dashboard – Capstone Management System</title>
     <meta name="description" content="Track your Capstone progress, view upcoming milestones, and manage your project.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -44,7 +45,7 @@
 <body class="dash-body">
 
 <header class="dash-header">
-    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.dash-sidebar').classList.toggle('open');var ov=document.getElementById('sidebarOverlay');if(ov)ov.classList.toggle('active')"><span></span><span></span><span></span></button><a href="../index.html" class="dash-brand-link">
+    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.dash-sidebar').classList.toggle('open');var ov=document.getElementById('sidebarOverlay');if(ov)ov.classList.toggle('active')"><span></span><span></span><span></span></button><a href="studentdashboard.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
                 <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
@@ -60,7 +61,7 @@
                 <span class="dash-user-id"></span>
             </div>
         </div>
-        <a href="../login.html" class="btn-header-logout" onclick="localStorage.clear()">Logout</a>
+        <a href="../login.html" class="btn-header-logout" onclick="cmsLogout();return false;">Logout</a>
     </div>
 </header>
 

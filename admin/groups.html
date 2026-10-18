@@ -1,19 +1,33 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <script>
+  function cmsLogout(){
+    try{localStorage.clear();sessionStorage.clear();}catch(e){}
+    window.location.replace('../login.html');
+  }
   (function(){
-    function _g(){
+    function _chk(){
       document.documentElement.style.visibility='hidden';
       var r=localStorage.getItem('cms_user_role');
       var u=localStorage.getItem('cms_logged_user');
-      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
+      if(!r||!u||r!=='admin'){
+        window.location.replace('../login.html');
+        return;
+      }
       document.documentElement.style.visibility='visible';
     }
-    _g();
-    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
+    _chk();
+    window.addEventListener('pageshow',function(){_chk();});
     window.addEventListener('unload',function(){});
     window.addEventListener('pagehide',function(){});
+    document.addEventListener('DOMContentLoaded',function(){
+      document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
+        if(link.textContent.trim().toLowerCase().includes('logout')){
+          link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+        }
+      });
+    });
   })();
 </script>
 <meta charset="UTF-8">
@@ -25,22 +39,7 @@
 </head>
 <body>
 <header class="dash-header">
-<script>
-  (function(){
-    function _g(){
-      document.documentElement.style.visibility='hidden';
-      var r=localStorage.getItem('cms_user_role');
-      var u=localStorage.getItem('cms_logged_user');
-      if(!r||!u||r!=='admin'){window.location.replace('../login.html');return;}
-      document.documentElement.style.visibility='visible';
-    }
-    _g();
-    window.addEventListener('pageshow',function(e){if(e.persisted){document.documentElement.style.visibility='hidden';_g();}});
-    window.addEventListener('unload',function(){});
-    window.addEventListener('pagehide',function(){});
-  })();
-</script>
-    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active')"><span></span><span></span><span></span></button><a href="../index.html" class="dash-brand-link">
+    <div class="dash-header-left"><button class="hamburger-btn" onclick="document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active')"><span></span><span></span><span></span></button><a href="admin-dashboard.html" class="dash-brand-link">
             <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
             <div class="dash-title-block">
                 <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
@@ -56,7 +55,7 @@
                 <span class="dash-user-id">Central Administration</span>
             </div>
         </div>
-        <a href="../login.html" class="btn-header-logout">Logout</a>
+        <a href="../login.html" class="btn-header-logout" onclick="cmsLogout();return false;">Logout</a>
     </div>
 </header>
 <div class="app"><div class="sidebar-overlay" id="sidebarOverlay" onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('active')"></div><aside class="sidebar">
@@ -80,7 +79,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Group Management</h2><p>Create groups, allocate students, assign project titles, and manage group status.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#groupTable" placeholder="Search groups or project titles..."><select class="field"><option>All statuses</option><option>Active</option><option>Locked</option></select><button class="btn btn-primary" data-modal-open="groupModal">+ Create Group</button></div><div class="card"><div class="table-wrap"><table id="groupTable"><thead><tr><th>Group ID</th><th>Project</th><th>Members</th><th>Member Preview</th><th>Supervisor</th><th>Status</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span id="groupCount">Showing 0 records</span><div class="pager"><button>â€¹</button><button class="current">1</button><button>â€º</button></div></div></div><div class="modal-backdrop" id="groupModal"><div class="modal"><div class="modal-head"><h3>Create Group</h3><button class="close" data-modal-close>Ã—</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Group name / number</label><input id="newGroupName" class="field" placeholder="e.g. GRP-01"></div><div class="input-group"><label>Project title</label><input id="newGroupProject" class="field" placeholder="Assigned project title"></div><div class="input-group"><label>Supervisor</label><input id="newGroupSupervisor" class="field" placeholder="Supervisor name"></div><div class="input-group"><label>Status</label><select id="newGroupStatus" class="field"><option>Active</option><option>Locked</option></select></div><div class="input-group full"><label>Members (comma separated student IDs)</label><textarea id="newGroupMembers" class="field" rows="3" placeholder="e.g. STU001, STU002, STU003"></textarea></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="adminCreateGroup(this)">Create Group</button></div></div></div></section>
+    <section class="page"><div class="page-head"><div><h2>Group Management</h2><p>Create groups, allocate students, assign project titles, and manage group status.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#groupTable" placeholder="Search groups or project titles..."><select class="field"><option>All statuses</option><option>Active</option><option>Locked</option></select><button class="btn btn-primary" data-modal-open="groupModal">+ Create Group</button></div><div class="card"><div class="table-wrap"><table id="groupTable"><thead><tr><th>Group ID</th><th>Project</th><th>Members</th><th>Member Preview</th><th>Supervisor</th><th>Status</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span id="groupCount">Showing 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div><div class="modal-backdrop" id="groupModal"><div class="modal"><div class="modal-head"><h3>Create Group</h3><button class="close" data-modal-close>×</button></div><div class="modal-body"><div class="form-grid"><div class="input-group"><label>Group name / number</label><input id="newGroupName" class="field" placeholder="e.g. GRP-01"></div><div class="input-group"><label>Project title</label><input id="newGroupProject" class="field" placeholder="Assigned project title"></div><div class="input-group"><label>Supervisor</label><input id="newGroupSupervisor" class="field" placeholder="Supervisor name"></div><div class="input-group"><label>Status</label><select id="newGroupStatus" class="field"><option>Active</option><option>Locked</option></select></div><div class="input-group full"><label>Members (comma separated student IDs)</label><textarea id="newGroupMembers" class="field" rows="3" placeholder="e.g. STU001, STU002, STU003"></textarea></div></div></div><div class="modal-foot"><button class="btn" data-modal-close>Cancel</button><button class="btn btn-primary" onclick="adminCreateGroup(this)">Create Group</button></div></div></div></section>
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

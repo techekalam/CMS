@@ -571,21 +571,57 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ── Hamburger Button ── */
-.hamburger-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;margin-right:8px;z-index:101}
-.hamburger-btn span{display:block;width:22px;height:2px;background:#fff;margin:5px 0;border-radius:2px;transition:0.3s}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:34}
+.hamburger-btn{
+  display:none;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:8px;
+  cursor:pointer;
+  padding:6px;
+  margin-right:8px;
+  z-index:101;
+  width:38px;
+  height:38px;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:4px;
+  flex-shrink:0;
+  transition:background 0.2s;
+}
+.hamburger-btn:active{background:rgba(255,255,255,0.25)}
+.hamburger-btn span{
+  display:block;
+  width:20px;
+  height:2.5px;
+  background:#fff;
+  border-radius:2px;
+  margin:0;
+  transition:0.3s;
+}
+.sidebar-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(2px);
+  z-index:99;
+}
 .sidebar-overlay.active{display:block}
 
 /* ── Tablet ≤ 768px ── */
 @media(max-width:768px){
-  .hamburger-btn{display:inline-flex;align-items:center}
+  .hamburger-btn{display:flex !important}
 
   /* Sidebar → slide-out drawer */
   .dash-sidebar{
     position:fixed;top:64px;left:0;bottom:0;
     transform:translateX(-100%);
     transition:transform 0.28s ease;
-    width:240px;z-index:35;
+    width:250px;z-index:100;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    box-shadow:4px 0 24px rgba(0,0,0,0.5);
   }
   .dash-sidebar.open{transform:translateX(0)}
 
@@ -647,12 +683,13 @@
 /* ── Phone ≤ 480px ── */
 @media(max-width:480px){
   .dash-header{height:54px;padding:0 8px}
-  .dash-logo{height:30px;width:30px}
+  .hamburger-btn{display:flex !important;width:34px;height:34px;padding:4px;margin-right:6px}
+  .dash-logo{height:28px;width:28px}
   .dash-site-title{font-size:11px!important}
   .dash-user-pill{display:none}
-  .btn-header-logout{padding:4px 8px;font-size:10px}
+  .btn-header-logout{padding:5px 10px;font-size:11px;border-radius:6px}
 
-  .dash-sidebar{top:54px}
+  .dash-sidebar{top:54px;width:240px;z-index:100}
   .dash-main{padding:10px}
 
   .page-title-row h2{font-size:16px}

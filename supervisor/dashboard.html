@@ -6,33 +6,33 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script>
-  document.documentElement.style.visibility='hidden';
-  function _supCheck(){
-    var role=localStorage.getItem('cms_user_role');
-    var user=localStorage.getItem('cms_logged_user');
-    if(!role||!user||role!=='supervisor'){window.location.replace('../login.html');}
-    else{document.documentElement.style.visibility='visible';}
-  }
-  _supCheck();
-  window.addEventListener('pageshow',function(e){
-    if(e.persisted){
-      document.documentElement.style.visibility='hidden';
-      _supCheck();
-    }
-  });
-  window.addEventListener('unload',function(){});
-  window.addEventListener('pagehide',function(){});
   function cmsLogout(){
-    ['cms_logged_user','cms_user_role','cms_user_name','cms_student_name','cms_student_id'].forEach(function(k){localStorage.removeItem(k);});
+    try{localStorage.clear();sessionStorage.clear();}catch(e){}
     window.location.replace('../login.html');
   }
-  document.addEventListener('DOMContentLoaded',function(){
-    document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
-      if(link.textContent.trim().toLowerCase().includes('logout')){
-        link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+  (function(){
+    function _supCheck(){
+      document.documentElement.style.visibility='hidden';
+      var role=localStorage.getItem('cms_user_role');
+      var user=localStorage.getItem('cms_logged_user');
+      if(!role||!user||role!=='supervisor'){
+        window.location.replace('../login.html');
+        return;
       }
+      document.documentElement.style.visibility='visible';
+    }
+    _supCheck();
+    window.addEventListener('pageshow',function(){_supCheck();});
+    window.addEventListener('unload',function(){});
+    window.addEventListener('pagehide',function(){});
+    document.addEventListener('DOMContentLoaded',function(){
+      document.querySelectorAll('a[href*="login.html"]').forEach(function(link){
+        if(link.textContent.trim().toLowerCase().includes('logout')){
+          link.addEventListener('click',function(e){e.preventDefault();cmsLogout();});
+        }
+      });
     });
-  });
+  })();
 </script>
 <title>Supervisor Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,7 +74,7 @@ body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-ser
 .topbar{background:var(--navy-solid);color:#fff;display:flex;align-items:center;justify-content:space-between;
   padding:12px 20px;position:sticky;top:0;z-index:40;padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .topbar-left{display:flex;align-items:center;gap:12px}
-.hamburger{display:none;background:none;border:none;color:#fff;font-size:20px;padding:4px 8px}
+.hamburger{display:none;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);border-radius:8px;color:#fff;font-size:20px;padding:4px 10px;cursor:pointer;flex-shrink:0}
 .logo-dot{width:36px;height:36px;border-radius:50%;background:var(--navy);border:1px solid #2C3E5C;display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
 .logo-dot img{width:100%;height:100%;object-fit:cover}
 .topbar-left h1{font-size:15px;margin:0}
@@ -234,7 +234,7 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
 <header class="dash-header">
   <div class="dash-header-left">
     <button class="hamburger" onclick="toggleSide()" aria-label="Toggle menu">&#9776;</button>
-    <a href="../index.html" class="dash-brand-link">
+    <a href="dashboard.html" class="dash-brand-link">
       <img src="../assets/logo.jpg" alt="CUU Logo" class="dash-logo">
       <div class="dash-title-block">
         <h1 class="dash-site-title">CAPSTONE MANAGEMENT SYSTEM</h1>
