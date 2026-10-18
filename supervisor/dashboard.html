@@ -678,7 +678,21 @@ async function setDocStatus(id, approved){
   const d = documents.find(x=>x.id===id);
   d.comments = document.getElementById('docComment').value;
   d.reviewed = true;
-  if(sb) await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString()}).eq('id', id);
+  if(sb) {
+    try {
+      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString()}).eq('id', id);
+      const st = students.find(s => s.id === d.studentId || s.name === d.student || s.reg === d.studentId);
+      const recipient = st ? (st.reg ? st.reg + '@student.cavendish.ac.ug' : d.studentId) : d.studentId;
+      await sb.from('notifications').insert({
+        recipient_email: recipient,
+        title: approved ? 'Document Approved' : 'Document Revision Requested',
+        message: `Supervisor ${SUPERVISOR_NAME} reviewed "${d.file}": ${d.comments || (approved ? 'Approved.' : 'Please revise and re-upload.')}`,
+        type: approved ? 'success' : 'warning',
+        read: false,
+        created_at: new Date().toISOString()
+      });
+    } catch(err) { console.warn('Notification notice:', err); }
+  }
   closeModal(); banner('banner-docs', approved? 'Document approved.' : 'Changes requested on document.', approved?'ok':'err'); renderDocs();
 }
 
@@ -693,7 +707,18 @@ async function approveTopic(id){
     if(st.groupId === s.groupId || (st.group && st.group === s.group)) st.groupTopicStatus = 'APPROVED';
   });
   if(sb && s.groupId) {
-    try { await sb.from('groups').update({topic_status:'APPROVED'}).eq('id', s.groupId); } catch(err) { console.warn(err); }
+    try {
+      await sb.from('groups').update({topic_status:'APPROVED'}).eq('id', s.groupId);
+      const recipient = s.reg ? s.reg + '@student.cavendish.ac.ug' : s.id;
+      await sb.from('notifications').insert({
+        recipient_email: recipient,
+        title: 'Project Topic Approved',
+        message: `Your project topic (${s.group}) has been approved by ${SUPERVISOR_NAME}. You can now proceed to submit your proposal deliverables.`,
+        type: 'success',
+        read: false,
+        created_at: new Date().toISOString()
+      });
+    } catch(err) { console.warn(err); }
   }
   banner('banner','Project topic approved.', 'ok'); render();
 }
@@ -713,7 +738,18 @@ async function submitDecline(id){
       if(st.groupId === s.groupId || (st.group && st.group === s.group)) st.groupTopicStatus = 'REUPLOAD_REQUESTED';
     });
     if(sb && s.groupId) {
-      try { await sb.from('groups').update({topic_status:'REUPLOAD_REQUESTED', topic_decline_reason:reason}).eq('id', s.groupId); } catch(err) { console.warn(err); }
+      try {
+        await sb.from('groups').update({topic_status:'REUPLOAD_REQUESTED', topic_decline_reason:reason}).eq('id', s.groupId);
+        const recipient = s.reg ? s.reg + '@student.cavendish.ac.ug' : s.id;
+        await sb.from('notifications').insert({
+          recipient_email: recipient,
+          title: 'Topic Revision Requested',
+          message: `Supervisor ${SUPERVISOR_NAME} requested revisions on your project topic: ${reason}`,
+          type: 'warning',
+          read: false,
+          created_at: new Date().toISOString()
+        });
+      } catch(err) { console.warn(err); }
     }
   }
   closeModal(); banner('banner','Topic declined; group notified to re-upload.', 'err'); render();
@@ -736,6 +772,15 @@ async function submitSchedule(id){
     if(sb) {
       try {
         await sb.from('student_status').upsert({student_id:id, group_id:s.groupId, defense_status:'SCHEDULED', defense_date:date, defense_time:time, defense_meeting_url:link});
+        const recipient = s.reg ? s.reg + '@student.cavendish.ac.ug' : s.id;
+        await sb.from('notifications').insert({
+          recipient_email: recipient,
+          title: 'Oral Defense Scheduled',
+          message: `Your capstone oral defense is scheduled for ${date} at ${time}. Meeting link: ${link}`,
+          type: 'defense',
+          read: false,
+          created_at: new Date().toISOString()
+        });
       } catch(err) { console.warn(err); }
     }
   }
@@ -798,6 +843,15 @@ async function submitGrade(id){
         comments: comment,
         is_approved: false
       });
+      const recipient = s?.reg ? s.reg + '@student.cavendish.ac.ug' : id;
+      await sb.from('notifications').insert({
+        recipient_email: recipient,
+        title: 'Capstone Assessment Marks Posted',
+        message: `Supervisor ${SUPERVISOR_NAME} recorded your evaluation marks: ${total}/100. Feedback: ${comment || 'Marks recorded.'}`,
+        type: 'success',
+        read: false,
+        created_at: new Date().toISOString()
+      });
     } catch(err) { console.warn(err); }
   }
   closeModal(); banner('banner','Marks submitted and locked.', 'ok'); render();
@@ -848,21 +902,53 @@ async function loadData(){
     // 4. Fetch documents for review
     const { data: docData, error: docErr } = await sb
       .from('documents')
-      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at');
+      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
+      .order('uploaded_at', { ascending: false });
     if(!docErr && docData && docData.length > 0){
       documents = docData.map(d => {
-        const matched = students.find(s => s.id === d.student_id);
+        const matched = students.find(s => s.id === d.student_id || s.reg === d.student_id);
         return {
           id: d.id,
+          studentId: d.student_id,
+          groupId: d.group_id,
           student: matched ? matched.name : d.student_id,
           file: d.file_name,
-          type: d.document_type,
+          type: d.document_type || 'PROPOSAL',
           comments: d.supervisor_comments || '',
           reviewed: !!d.reviewed_at,
           url: d.file_url || '#'
         };
       });
     }
+
+    // Realtime subscription for incoming student document uploads
+    try {
+      sb.channel('realtime-supervisor-docs')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, async () => {
+          const { data: refreshed } = await sb
+            .from('documents')
+            .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
+            .order('uploaded_at', { ascending: false });
+          if (refreshed) {
+            documents = refreshed.map(d => {
+              const matched = students.find(s => s.id === d.student_id || s.reg === d.student_id);
+              return {
+                id: d.id,
+                studentId: d.student_id,
+                groupId: d.group_id,
+                student: matched ? matched.name : d.student_id,
+                file: d.file_name,
+                type: d.document_type || 'PROPOSAL',
+                comments: d.supervisor_comments || '',
+                reviewed: !!d.reviewed_at,
+                url: d.file_url || '#'
+              };
+            });
+            renderDocs();
+          }
+        })
+        .subscribe();
+    } catch(err) { console.warn('Docs realtime notice:', err); }
 
     // 5. Fetch supervisor profile and groups
     try {

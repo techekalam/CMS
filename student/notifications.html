@@ -81,19 +81,25 @@
 
     <main class="dash-main">
         <div class="tracker-card" style="max-width:760px;">
-            <div class="tracker-card-header" style="margin-bottom:20px;">
+            <div class="tracker-card-header" style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
                 <div>
                     <h2 class="tracker-title">System &amp; Academic Notifications</h2>
                     <p class="tracker-sub">Updates regarding capstone deadlines, supervisor evaluations, and faculty notices</p>
                 </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span id="unreadCountBadge" style="display:inline-block;padding:3px 10px;background:#e0f2fe;color:#0369a1;border-radius:12px;font-size:12px;font-weight:600;">0 unread</span>
+                    <button type="button" class="btn" style="padding:5px 12px;font-size:12px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer;font-weight:600;color:#334155;" onclick="markAllNotificationsAsRead()">Mark all as read</button>
+                </div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:12px;">
-                <p style="font-size:13px;color:#64748b;margin:0;">No notifications yet.</p>
+            <div id="notificationsContainer" style="display:flex;flex-direction:column;gap:12px;">
+                <p style="font-size:13px;color:#64748b;margin:0;">Loading notifications...</p>
             </div>
         </div>
     </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/js/supabase.js"></script>
 <script src="../assets/js/main.js"></script>
 </body>
 </html>

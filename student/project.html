@@ -100,10 +100,10 @@
                     <div style="margin-bottom:18px;">
                         <label for="artifact-type" style="display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#374151;">Document Deliverable Type</label>
                         <select id="artifact-type" name="artifact-type" style="width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;">
-                            <option value="proposal">Proposal Document</option>
-                            <option value="srs">Software Requirements Specification (SRS)</option>
-                            <option value="design">System Architecture &amp; Design Model</option>
-                            <option value="final-report">Final Capstone Dissertation</option>
+                            <option value="PROPOSAL">Proposal Document</option>
+                            <option value="SYSTEM_ARCHITECTURE">System Architecture &amp; Design Model</option>
+                            <option value="FINAL_DISSERTATION">Final Capstone Dissertation</option>
+                            <option value="DELIVERABLE">Other Deliverable / SRS / Prototype</option>
                         </select>
                     </div>
 
@@ -112,8 +112,16 @@
                         <input type="file" id="file-upload" name="file-upload" required style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;">
                     </div>
 
-                    <button type="submit" style="padding:12px 28px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(37,99,235,0.3);">Upload Deliverable</button>
+                    <button type="submit" id="btnUploadDeliverable" style="padding:12px 28px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(37,99,235,0.3);">Upload Deliverable</button>
                 </form>
+            </div>
+
+            <!-- Uploaded Deliverables Section -->
+            <div style="margin-top:28px;border-top:1px solid #e5e7eb;padding-top:20px;">
+                <h3 style="font-size:16px;font-weight:700;color:#1f2937;margin:0 0 14px;">Submitted Documents &amp; Review Status</h3>
+                <div id="studentDocsContainer">
+                    <p style="font-size:13px;color:#64748b;margin:0;">No documents uploaded yet.</p>
+                </div>
             </div>
         </div>
     </main>

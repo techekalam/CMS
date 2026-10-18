@@ -25,6 +25,13 @@ function _getMainSb() {
     return null;
 }
 
+function escHtml(str) {
+    if (!str) return '';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 // ── Shared Helper: Get Student Group & Status ──
 async function getStudentGroup(sb, email, studentId) {
     if (!sb) return null;
@@ -426,6 +433,68 @@ function initRegistrationForm() {
 }
 
 /* ── 5. MY PROJECT PAGE ── */
+async function loadStudentDocuments(sb, studentId, groupId) {
+    const container = document.getElementById('studentDocsContainer');
+    if (!container || !sb) return;
+
+    try {
+        let q = sb.from('documents').select('*');
+        if (studentId && groupId) {
+            q = q.or(`student_id.eq.${studentId},group_id.eq.${groupId}`);
+        } else if (studentId) {
+            q = q.eq('student_id', studentId);
+        } else if (groupId) {
+            q = q.eq('group_id', groupId);
+        }
+        const { data: docs, error } = await q.order('uploaded_at', { ascending: false });
+        if (error) throw error;
+
+        if (!docs || docs.length === 0) {
+            container.innerHTML = '<p style="font-size:13px;color:#64748b;margin:0;">No deliverables uploaded yet. Use the form above to submit your proposal or design models.</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="overflow-x:auto;">
+                <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left;background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;font-size:11px;text-transform:uppercase;">
+                            <th style="padding:10px 12px;">File Name</th>
+                            <th style="padding:10px 12px;">Deliverable Type</th>
+                            <th style="padding:10px 12px;">Uploaded</th>
+                            <th style="padding:10px 12px;">Review Status</th>
+                            <th style="padding:10px 12px;">Supervisor Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${docs.map(d => {
+                            const dateStr = d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '—';
+                            const isReviewed = !!d.reviewed_at;
+                            const statusBadge = isReviewed
+                                ? '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Reviewed / Approved</span>'
+                                : '<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending Review</span>';
+                            const typeLabel = (d.document_type || 'DELIVERABLE').replace(/_/g, ' ');
+                            return `
+                                <tr style="border-bottom:1px solid #e2e8f0;">
+                                    <td style="padding:10px 12px;font-weight:600;color:#1e293b;">
+                                        <a href="${d.file_url || '#'}" target="_blank" style="color:#2563eb;text-decoration:none;">📄 ${d.file_name}</a>
+                                    </td>
+                                    <td style="padding:10px 12px;color:#64748b;font-size:12px;">${typeLabel}</td>
+                                    <td style="padding:10px 12px;color:#64748b;font-size:12px;">${dateStr}</td>
+                                    <td style="padding:10px 12px;">${statusBadge}</td>
+                                    <td style="padding:10px 12px;color:#475569;font-size:12px;">${d.supervisor_comments ? '💬 ' + d.supervisor_comments : '—'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch(err) {
+        console.warn('Load student documents notice:', err);
+    }
+}
+
 async function initProjectPage() {
     if (!window.location.pathname.includes('project.html')) return;
 
@@ -438,25 +507,28 @@ async function initProjectPage() {
     const catEl    = document.getElementById('displayProjCat');
 
     let currentGroupId = null;
-    let currentGroupNumber = null;
 
     if (sb) {
         try {
             const groupInfo = await getStudentGroup(sb, email, studentId);
-            if (groupInfo && groupInfo.group) {
-                const grp = groupInfo.group;
-                currentGroupId = grp.id;
-                currentGroupNumber = grp.group_number;
+            if (groupInfo) {
+                if (groupInfo.studentId) studentId = groupInfo.studentId;
+                if (groupInfo.group) {
+                    const grp = groupInfo.group;
+                    currentGroupId = grp.id;
 
-                if (titleEl) titleEl.textContent = grp.project_title || `Capstone Project (${grp.group_number})`;
-                if (statusEl) {
-                    const st = grp.topic_status || 'SUBMITTED';
-                    statusEl.textContent = st === 'APPROVED' ? 'Approved' : (st === 'REUPLOAD_REQUESTED' ? 'Revision Requested' : 'Submitted / Under Review');
-                    statusEl.style.background = st === 'APPROVED' ? '#dcfce7' : (st === 'REUPLOAD_REQUESTED' ? '#fee2e2' : '#fef3c7');
-                    statusEl.style.color = st === 'APPROVED' ? '#15803d' : (st === 'REUPLOAD_REQUESTED' ? '#dc2626' : '#b45309');
+                    if (titleEl) titleEl.textContent = grp.project_title || `Capstone Project (${grp.group_number})`;
+                    if (statusEl) {
+                        const st = grp.topic_status || 'SUBMITTED';
+                        statusEl.textContent = st === 'APPROVED' ? 'Approved' : (st === 'REUPLOAD_REQUESTED' ? 'Revision Requested' : 'Submitted / Under Review');
+                        statusEl.style.background = st === 'APPROVED' ? '#dcfce7' : (st === 'REUPLOAD_REQUESTED' ? '#fee2e2' : '#fef3c7');
+                        statusEl.style.color = st === 'APPROVED' ? '#15803d' : (st === 'REUPLOAD_REQUESTED' ? '#dc2626' : '#b45309');
+                    }
+                    if (catEl) catEl.textContent = grp.category || 'Software Development';
                 }
-                if (catEl) catEl.textContent = grp.category || 'Software Development';
             }
+            // Load existing uploaded deliverables
+            loadStudentDocuments(sb, studentId, currentGroupId);
         } catch(e) { console.warn('Project page fetch notice:', e); }
     }
 
@@ -466,33 +538,82 @@ async function initProjectPage() {
             e.preventDefault();
             const fileInput = document.getElementById('file-upload');
             const typeInput = document.getElementById('artifact-type');
+            const btn = document.getElementById('btnUploadDeliverable') || uploadForm.querySelector('button[type="submit"]');
 
             if (!fileInput || !fileInput.files.length) {
                 alert('Please select a file to upload.');
                 return;
             }
 
-            const fileName = fileInput.files[0].name;
-            const docType  = typeInput ? typeInput.value : 'proposal';
+            const file = fileInput.files[0];
+            const fileName = file.name;
+            const rawType  = (typeInput ? typeInput.value : 'PROPOSAL').toUpperCase().replace(/-/g, '_');
+
+            // Strictly validate against database constraint: ('PROPOSAL', 'SYSTEM_ARCHITECTURE', 'FINAL_DISSERTATION', 'DELIVERABLE')
+            const validTypes = ['PROPOSAL', 'SYSTEM_ARCHITECTURE', 'FINAL_DISSERTATION', 'DELIVERABLE'];
+            let mappedType = rawType;
+            if (!validTypes.includes(mappedType)) {
+                if (mappedType.includes('PROPOSAL')) mappedType = 'PROPOSAL';
+                else if (mappedType.includes('DESIGN') || mappedType.includes('ARCH') || mappedType.includes('SRS')) mappedType = 'SYSTEM_ARCHITECTURE';
+                else if (mappedType.includes('FINAL') || mappedType.includes('DISSERTATION') || mappedType.includes('REPORT')) mappedType = 'FINAL_DISSERTATION';
+                else mappedType = 'DELIVERABLE';
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Uploading...';
+            }
 
             if (sb) {
                 try {
-                    const sId = studentId || email;
-                    await sb.from('documents').insert({
-                        student_id: sId,
-                        group_id: currentGroupId,
-                        file_name: fileName,
-                        file_url: 'https://docs.google.com/viewer?url=' + encodeURIComponent(fileName),
-                        document_type: docType.toUpperCase().replace(/-/g, '_'),
-                        created_at: new Date().toISOString()
-                    });
-                } catch(err) {
-                    console.warn('Doc upload notice:', err);
-                }
-            }
+                    const sId = studentId || (localStorage.getItem('cms_student_id')) || email;
 
-            showToast(`Uploaded "${fileName}" for supervisor review.`);
-            fileInput.value = '';
+                    // Read file as preview URL
+                    const reader = new FileReader();
+                    reader.onload = async function(ev) {
+                        const fileUrl = (file.size < 1.5 * 1024 * 1024) ? ev.target.result : ('https://docs.google.com/viewer?url=' + encodeURIComponent(fileName));
+
+                        const { error: insertErr } = await sb.from('documents').insert({
+                            student_id: sId,
+                            group_id: currentGroupId,
+                            file_name: fileName,
+                            file_url: fileUrl,
+                            document_type: mappedType,
+                            uploaded_at: new Date().toISOString()
+                        });
+
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.textContent = 'Upload Deliverable';
+                        }
+
+                        if (insertErr) {
+                            console.error('Doc upload error:', insertErr);
+                            alert('Upload failed: ' + insertErr.message);
+                            return;
+                        }
+
+                        showToast(`Uploaded "${fileName}" for supervisor review.`);
+                        fileInput.value = '';
+                        loadStudentDocuments(sb, sId, currentGroupId);
+                    };
+                    reader.readAsDataURL(file);
+                } catch(err) {
+                    console.error('Doc upload error:', err);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'Upload Deliverable';
+                    }
+                    alert('Upload failed: ' + err.message);
+                }
+            } else {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Upload Deliverable';
+                }
+                showToast(`Uploaded "${fileName}".`);
+                fileInput.value = '';
+            }
         });
     }
 }
@@ -665,9 +786,170 @@ async function initAssessmentsPage() {
     }
 }
 
-/* ── 9. NOTIFICATIONS PAGE ── */
-function initNotificationsPage() {
+/* ── 9. NOTIFICATIONS PAGE (Real-Time DB Sync) ── */
+let _currentNotifications = [];
+
+function renderNotificationsList(items) {
+    const container = document.getElementById('notificationsContainer');
+    const badge = document.getElementById('unreadCountBadge');
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:36px;color:#64748b;font-size:13.5px;"><div style="font-size:28px;margin-bottom:8px;">🔔</div>No notifications yet. You will be alerted when supervisors post feedback or defense dates.</div>';
+        if (badge) badge.textContent = '0 unread';
+        return;
+    }
+
+    const unreadCount = items.filter(n => !n.read).length;
+    if (badge) {
+        badge.textContent = `${unreadCount} unread`;
+        badge.style.background = unreadCount > 0 ? '#fee2e2' : '#e0f2fe';
+        badge.style.color = unreadCount > 0 ? '#dc2626' : '#0369a1';
+    }
+
+    container.innerHTML = items.map((n, idx) => {
+        const isUnread = !n.read;
+        const timeStr = n.created_at ? new Date(n.created_at).toLocaleDateString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : 'Recent';
+        
+        let icon = '🔔';
+        let accentColor = '#2563eb';
+        let bgTint = '#f8fafc';
+        if (n.type === 'success' || (n.title && n.title.includes('Approved'))) {
+            icon = '✅'; accentColor = '#16a34a'; bgTint = '#f0fdf4';
+        } else if (n.type === 'warning' || (n.title && n.title.includes('Revision'))) {
+            icon = '⚠️'; accentColor = '#d97706'; bgTint = '#fffbeb';
+        } else if (n.type === 'defense') {
+            icon = '📅'; accentColor = '#7c3aed'; bgTint = '#f5f3ff';
+        }
+
+        const notifId = n.id ? String(n.id) : `idx-${idx}`;
+        return `
+            <div onclick="markNotificationRead('${notifId}')" style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:${isUnread ? bgTint : '#ffffff'};border:1px solid ${isUnread ? accentColor : '#e2e8f0'};border-left:4px solid ${accentColor};border-radius:10px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;position:relative;">
+                <div style="font-size:22px;flex-shrink:0;margin-top:2px;">${icon}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+                        <h4 style="margin:0;font-size:14.5px;font-weight:700;color:#1e293b;">${escHtml(n.title)}</h4>
+                        <span style="font-size:11.5px;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
+                    </div>
+                    <p style="margin:0;font-size:13px;color:#475569;line-height:1.5;">${escHtml(n.message)}</p>
+                </div>
+                ${isUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:6px;" title="Unread"></span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+window.markNotificationRead = async function(id) {
+    const sb = _getMainSb();
+    const notif = _currentNotifications.find(n => String(n.id) === String(id));
+    if (notif) notif.read = true;
+    renderNotificationsList(_currentNotifications);
+
+    if (sb && id && !id.startsWith('ctx-') && !id.startsWith('idx-')) {
+        try {
+            await sb.from('notifications').update({ read: true }).eq('id', id);
+        } catch(e) {}
+    }
+};
+
+window.markAllNotificationsAsRead = async function() {
+    _currentNotifications.forEach(n => { n.read = true; });
+    renderNotificationsList(_currentNotifications);
+
+    const sb = _getMainSb();
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    if (sb && email) {
+        try {
+            await sb.from('notifications').update({ read: true }).eq('recipient_email', email);
+            showToast('All notifications marked as read.');
+        } catch(e) {}
+    }
+};
+
+async function initNotificationsPage() {
     if (!window.location.pathname.includes('notifications.html')) return;
+
+    const sb = _getMainSb();
+    const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+    let studentId = localStorage.getItem('cms_student_id') || '';
+
+    let dbNotifs = [];
+    let groupInfo = null;
+
+    if (sb) {
+        try {
+            let q = sb.from('notifications').select('*');
+            if (email) {
+                q = q.or(`recipient_email.eq.${email},recipient_email.eq.all`);
+            }
+            const { data, error } = await q.order('created_at', { ascending: false });
+            if (!error && data) dbNotifs = data;
+
+            groupInfo = await getStudentGroup(sb, email, studentId);
+        } catch(e) {
+            console.warn('Notifications fetch notice:', e);
+        }
+    }
+
+    const combined = [...dbNotifs];
+
+    if (groupInfo && groupInfo.group) {
+        const grp = groupInfo.group;
+        if (!combined.some(n => n.message && n.message.includes(grp.group_number))) {
+            combined.push({
+                id: 'ctx-grp',
+                title: 'Assigned to Capstone Group',
+                message: `You are placed in ${grp.group_number} (${grp.project_title || 'Software Development'}). Open My Group to collaborate with your team.`,
+                type: 'info',
+                read: false,
+                created_at: grp.created_at || new Date().toISOString()
+            });
+        }
+
+        if (grp.supervisor_name && !combined.some(n => n.message && n.message.includes(grp.supervisor_name))) {
+            combined.push({
+                id: 'ctx-sup',
+                title: 'Faculty Supervisor Assigned',
+                message: `${grp.supervisor_name} has been assigned as your academic capstone supervisor. Reach out via group chat or office hours.`,
+                type: 'success',
+                read: false,
+                created_at: grp.updated_at || new Date().toISOString()
+            });
+        }
+
+        if (grp.topic_status === 'APPROVED' && !combined.some(n => n.title && n.title.includes('Approved'))) {
+            combined.push({
+                id: 'ctx-topic',
+                title: 'Capstone Topic Approved',
+                message: `Your project topic "${grp.project_title}" has been approved by your supervisor.`,
+                type: 'success',
+                read: true,
+                created_at: grp.updated_at || new Date().toISOString()
+            });
+        }
+    }
+
+    combined.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    _currentNotifications = combined;
+    renderNotificationsList(_currentNotifications);
+
+    // Supabase Realtime subscription on notifications table
+    if (sb && email) {
+        try {
+            sb.channel('realtime-student-notifications')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `recipient_email=eq.${email}`
+                }, payload => {
+                    _currentNotifications.unshift(payload.new);
+                    renderNotificationsList(_currentNotifications);
+                    showToast(`New Notification: ${payload.new.title}`);
+                })
+                .subscribe();
+        } catch(e) {}
+    }
 }
 
 /* ── UTILITY: TOAST NOTIFICATIONS (No Icons) ── */
