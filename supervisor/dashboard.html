@@ -307,7 +307,7 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
       <div class="card" style="overflow-x:auto">
         <table>
           <thead><tr><th>Student</th><th>Programme</th><th>Group</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
-          <tbody id="rows"><tr><td colspan="5" style="color:var(--muted)">Loadingâ€¦ (connect Supabase credentials below)</td></tr></tbody>
+          <tbody id="rows"><tr><td colspan="5" style="color:var(--muted)">Loading... (connect Supabase credentials below)</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -499,7 +499,7 @@ function renderDocs(){
 function openDocReview(id){
   const d = documents.find(x=>x.id===id);
   showModal(`<h3>Review Document</h3>
-    <p style="font-size:12px;color:var(--muted);margin-top:-6px">${d.student} â€” ${d.file}</p>
+    <p style="font-size:12px;color:var(--muted);margin-top:-6px">${d.student} &mdash; ${d.file}</p>
     <div class="field"><label>Supervisor Comments</label><textarea id="docComment" rows="3">${d.comments||''}</textarea></div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeModal()">Cancel</button>
@@ -665,10 +665,10 @@ async function loadData(){
         const st = statusMap[r.student_id] || {};
         return {
           id: r.student_id,
-          name: r.name || 'â€”',
+          name: r.name || '&mdash;',
           reg: r.registration_number || r.student_id,
-          programme: r.course || 'â€”',
-          group: r.groups?.group_number || 'â€”',
+          programme: r.course || '&mdash;',
+          group: r.groups?.group_number || '&mdash;',
           groupId: r.group_id || r.groups?.id,
           groupTopicStatus: r.groups?.topic_status || 'SUBMITTED',
           completion: st.completion_percentage !== undefined ? st.completion_percentage : (gradedSet.has(r.student_id) ? 100 : 0),

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register â€“ Capstone Management System</title>
+    <title>Register &ndash; Capstone Management System</title>
     <meta name="description" content="Create your student account to access the Capstone Management System.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -223,7 +223,7 @@
             position: relative;
         }
         .reg-select-wrap::after {
-            content: 'â–¾';
+            content: '\25BE';
             position: absolute;
             right: 14px;
             top: 50%;
@@ -418,7 +418,7 @@
             <!-- FORM -->
             <form class="reg-form-body" id="regForm" novalidate>
 
-                <!-- STEP 1 â€“ Account Details -->
+                <!-- STEP 1 &ndash; Account Details -->
                 <div id="step1">
                     <div class="reg-form-group">
                         <label class="reg-label" for="full-name">Full Name <span class="req">*</span></label>
@@ -431,11 +431,11 @@
                     </div>
 
                     <button type="button" class="reg-submit-btn" id="next1Btn" onclick="goToStep2()">
-                        Continue â†’ Academic Details
+                        Continue &rarr; Academic Details
                     </button>
                 </div>
 
-                <!-- STEP 2 â€“ Academic Details -->
+                <!-- STEP 2 &ndash; Academic Details -->
                 <div id="step2" style="display:none;">
                     <div class="reg-form-group">
                         <label class="reg-label" for="school-id">School ID / Student Number <span class="req">*</span></label>
@@ -501,12 +501,12 @@
                     </div>
 
                     <div style="display:flex;gap:10px;">
-                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep1()">â† Back</button>
-                        <button type="button" class="reg-submit-btn" id="next2Btn" onclick="goToStep3()">Review &amp; Submit â†’</button>
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep1()">&larr; Back</button>
+                        <button type="button" class="reg-submit-btn" id="next2Btn" onclick="goToStep3()">Review &amp; Submit &rarr;</button>
                     </div>
                 </div>
 
-                <!-- STEP 3 â€“ Review & Confirm -->
+                <!-- STEP 3 – Review & Confirm -->
                 <div id="step3" style="display:none;">
                     <div style="background:#f9fafb;border-radius:12px;padding:18px;margin-bottom:18px;border:1px solid #e5e7eb;">
                         <h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.5px;">Review Your Details</h3>
@@ -521,7 +521,7 @@
                     </div>
 
                     <div style="display:flex;gap:10px;">
-                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep2Back()">â† Edit</button>
+                        <button type="button" class="reg-submit-btn" style="background:#f3f4f6;color:#374151;box-shadow:none;" onclick="goToStep2Back()">&larr; Edit</button>
                         <button type="submit" class="reg-submit-btn" id="submitBtn">Complete Registration</button>
                     </div>
 
@@ -533,10 +533,10 @@
 
             <!-- SUCCESS STATE -->
             <div class="reg-success" id="regSuccess">
-                <div class="success-icon">â€¢</div>
+                <div class="success-icon">&#10003;</div>
                 <h2 class="success-title">Account Created!</h2>
                 <p class="success-sub">Welcome to the Capstone Management System,<br><strong id="successName"></strong>.<br>Your student record has been initialized.<span id="successGroup"></span> You can now sign in.</p>
-                <a href="./login.html" class="success-btn">Go to Login â†’</a>
+                <a href="./login.html" class="success-btn">Go to Login &rarr;</a>
             </div>
 
         </div><!-- /reg-card -->
@@ -597,11 +597,11 @@
                 ['Full Name',     document.getElementById('full-name').value],
                 ['Email',         document.getElementById('email').value],
                 ['School ID',     sid],
-                ['Intake Year',   iyEl.value || 'â€”'],
-                ['Study Year',    syEl.options[syEl.selectedIndex]?.text || 'â€”'],
+                ['Intake Year',   iyEl.value || '&mdash;'],
+                ['Study Year',    syEl.options[syEl.selectedIndex]?.text || '&mdash;'],
                 ['Mode of Study', modeLabels[mode] || mode],
                 ['Programme',     programLabels[prog] || prog],
-                ['Phone',         document.getElementById('phone').value || 'â€”'],
+                ['Phone',         document.getElementById('phone').value || '&mdash;'],
             ];
 
             document.getElementById('reviewContent').innerHTML = rows.map(([k,v]) => `

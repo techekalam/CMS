@@ -22,7 +22,7 @@
         }
       })();
     </script>
-    <title>Sign In â€“ Capstone Management System</title>
+    <title>Sign In &ndash; Capstone Management System</title>
     <meta name="description" content="Access your Cavendish University Uganda Capstone Management System workspace.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -559,7 +559,7 @@
                 </div>
 
                 <div style="text-align:center; margin-top: 14px;">
-                    <button class="btn-ghost" onclick="goBackToEmail()">â† Use a different email</button>
+                    <button class="btn-ghost" onclick="goBackToEmail()">&larr; Use a different email</button>
                 </div>
             </div>
 
@@ -589,7 +589,7 @@
                 <div class="login-msg" id="msg3" role="alert"></div>
 
                 <div style="text-align:center;margin-top:14px;">
-                    <button class="btn-ghost" onclick="goBackToEmail()">â† Use a different email</button>
+                    <button class="btn-ghost" onclick="goBackToEmail()">&larr; Use a different email</button>
                 </div>
             </div>
 
@@ -619,7 +619,7 @@
             if (session && session.user) {
                 const email = session.user.email;
                 console.log('[CMS Login] Magic-link session detected for:', email);
-                showMsg('msg1', 'âœ“ Email confirmed! Signing you inâ€¦', 'success');
+                showMsg('msg1', '&#10003; Email confirmed! Signing you in...', 'success');
 
                 let profile = null;
                 try { profile = await window.CMS_SB.Auth.getProfile(email); } catch(e) {}
@@ -699,7 +699,7 @@
                (domain === ALLOWED_DOMAIN || domain.endsWith('.' + ALLOWED_DOMAIN));
     }
 
-    // â”€â”€ Role resolver â€” trusts DB profile first â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ Role resolver &mdash; trusts DB profile first â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function resolveRole(email, profile) {
         const targets = {
             coordinator: 'coordinator/dashboard.html',
@@ -730,19 +730,19 @@
         const btn = document.getElementById('sendOtpBtn');
         btn.disabled = busy;
         document.getElementById('spinner1').classList.toggle('visible', busy);
-        document.getElementById('sendBtnLabel').textContent = busy ? 'Checkingâ€¦' : 'Continue';
+        document.getElementById('sendBtnLabel').textContent = busy ? 'Checking...' : 'Continue';
     }
     function setBusy2(busy) {
         const btn = document.getElementById('verifyOtpBtn');
         btn.disabled = busy;
         document.getElementById('spinner2').classList.toggle('visible', busy);
-        document.getElementById('verifyBtnLabel').textContent = busy ? 'Verifyingâ€¦' : 'Verify & Sign In';
+        document.getElementById('verifyBtnLabel').textContent = busy ? 'Verifying...' : 'Verify & Sign In';
     }
     function setBusy3(busy) {
         const btn = document.getElementById('signInPwdBtn');
         btn.disabled = busy;
         document.getElementById('spinner3').classList.toggle('visible', busy);
-        document.getElementById('pwdBtnLabel').textContent = busy ? 'Signing inâ€¦' : 'Sign In';
+        document.getElementById('pwdBtnLabel').textContent = busy ? 'Signing in...' : 'Sign In';
     }
 
     // â”€â”€ OTP digit helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -797,7 +797,7 @@
     }
 
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    // STEP 1 â€” Email submitted: route staff â†’ password, students â†’ OTP
+    // STEP 1 &mdash; Email submitted: route staff &rarr; password, students &rarr; OTP
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     async function sendOtp() {
         showMsg('msg1', '');
@@ -809,7 +809,7 @@
         if (!sb) { showMsg('msg1', 'Sign-in service unavailable. Please refresh and try again.', 'error'); return; }
 
         setBusy1(true);
-        showMsg('msg1', 'Checking accountâ€¦', 'info');
+        showMsg('msg1', 'Checking account...', 'info');
 
         let profile = null;
         try { profile = await window.CMS_SB.Auth.getProfile(emailRaw); } catch(e) { console.warn('[CMS] getProfile error', e); }
@@ -834,7 +834,7 @@
         currentEmail   = emailRaw;
         currentProfile = profile;
 
-        // â”€â”€ STAFF / ADMIN â†’ Password panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â”€â”€ STAFF / ADMIN &rarr; Password panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (isStaff) {
             document.getElementById('staffEmailDisplay').textContent = emailRaw;
             document.getElementById('passwordInput').value = '';
@@ -844,8 +844,8 @@
             return;
         }
 
-        // â”€â”€ STUDENT â†’ OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        showMsg('msg1', 'Sending sign-in codeâ€¦', 'info');
+        // â”€â”€ STUDENT &rarr; OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        showMsg('msg1', 'Sending sign-in code...', 'info');
         setBusy1(true);
         const { error } = await sb.auth.signInWithOtp({ email: emailRaw, options: { shouldCreateUser: true } });
         setBusy1(false);
@@ -853,7 +853,7 @@
         if (error) {
             const msg = (error.message || '').toLowerCase();
             if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('email rate')) {
-                showMsg('msg1', 'Too many requests â€” please wait 60 seconds and try again.', 'error');
+                showMsg('msg1', 'Too many requests &mdash; please wait 60 seconds and try again.', 'error');
             } else if (msg.includes('user not found') || msg.includes('no user') || msg.includes('invalid login')) {
                 showMsg('msg1', 'No student account found for this email. Please register first or contact the administrator.', 'error');
             } else {
@@ -865,13 +865,13 @@
         document.getElementById('emailDisplay').textContent = emailRaw;
         showStep(2);
         clearOtpInputs();
-        showMsg('msg2', 'âœ“ Code sent! Enter the 6-digit code from your inbox (check spam too).', 'info');
+        showMsg('msg2', '&#10003; Code sent! Enter the 6-digit code from your inbox (check spam too).', 'info');
         startResendTimer(60);
         setTimeout(() => document.getElementById('otp0').focus(), 120);
     }
 
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    // STEP 2b â€” Password sign-in (Staff / Admin) â€” DB check only
+    // STEP 2b &mdash; Password sign-in (Staff / Admin) &mdash; DB check only
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     async function signInWithPassword() {
         showMsg('msg3', '');
@@ -909,7 +909,7 @@
             const name = profile.name || currentEmail.split('@')[0];
             saveSession(currentEmail, role, name, profile);
 
-            showMsg('msg3', 'âœ“ Signed in! Redirectingâ€¦', 'success');
+            showMsg('msg3', '&#10003; Signed in! Redirecting...', 'success');
             setTimeout(() => go(target), 800);
         } catch (e) {
             setBusy3(false);
@@ -919,7 +919,7 @@
     }
 
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    // STEP 2 â€” OTP verification (Students)
+    // STEP 2 &mdash; OTP verification (Students)
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     async function verifyOtp() {
         const code = getOtpValue();
@@ -953,7 +953,7 @@
         const name = (profile && profile.name) || user.user_metadata?.full_name || currentEmail.split('@')[0];
         saveSession(currentEmail, role, name, profile);
 
-        showMsg('msg2', 'âœ“ Verified! Redirectingâ€¦', 'success');
+        showMsg('msg2', '&#10003; Verified! Redirecting...', 'success');
         setTimeout(() => go(target), 900);
     }
 
@@ -964,7 +964,7 @@
         if (!sb) { showMsg('msg2', 'Service unavailable.', 'error'); return; }
         const btn = document.getElementById('resendBtn');
         btn.disabled = true;
-        showMsg('msg2', 'Resending codeâ€¦', 'info');
+        showMsg('msg2', 'Resending code...', 'info');
         const { error } = await sb.auth.signInWithOtp({ email: currentEmail, options: { shouldCreateUser: true } });
         if (error) {
             btn.disabled = false;
@@ -972,7 +972,7 @@
             showMsg('msg2', msg.includes('rate limit') || msg.includes('too many')
                 ? 'Rate limit reached. Please wait 60 seconds.' : 'Could not resend: ' + error.message, 'error');
         } else {
-            showMsg('msg2', 'âœ“ New code sent. Check your inbox and spam folder.', 'info');
+            showMsg('msg2', '&#10003; New code sent. Check your inbox and spam folder.', 'info');
             clearOtpInputs(); startResendTimer(60);
         }
     }
