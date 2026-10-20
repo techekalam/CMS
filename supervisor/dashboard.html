@@ -687,7 +687,11 @@ function renderDocs(){
       <td>${d.student}</td>
       <td>${d.file}</td>
       <td>${d.type.replace('_',' ')}</td>
-      <td>${badge(d.reviewed?'Reviewed':'Pending Review', d.reviewed?'ok':'warn')}</td>
+      <td>${
+        d.reviewed
+          ? (d.approved ? badge('Approved', 'ok') : badge('Rejected / Changes Requested', 'err'))
+          : badge('Pending Review', 'warn')
+      }</td>
       <td style="text-align:right"><div class="actions">
         <button class="btn-ghost" onclick="openDocument('${d.id}')">Open</button>
         <button class="btn-primary" onclick="openDocReview('${d.id}')">Review</button>
@@ -712,9 +716,10 @@ async function setDocStatus(id, approved){
   const d = documents.find(x=>x.id===id);
   d.comments = document.getElementById('docComment').value;
   d.reviewed = true;
+  d.approved = approved;
   if(sb) {
     try {
-      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString()}).eq('id', id);
+      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString(), status: approved ? 'approved' : 'rejected'}).eq('id', id);
       const st = students.find(s => s.id === d.studentId || s.name === d.student || s.reg === d.studentId);
       const recipient = st ? (st.reg ? st.reg + '@student.cavendish.ac.ug' : d.studentId) : d.studentId;
       await sb.from('notifications').insert({
@@ -936,7 +941,7 @@ async function loadData(){
     // 4. Fetch documents for review
     const { data: docData, error: docErr } = await sb
       .from('documents')
-      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
+      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at, status')
       .order('uploaded_at', { ascending: false });
     if(!docErr && docData && docData.length > 0){
       documents = docData.map(d => {
@@ -950,6 +955,7 @@ async function loadData(){
           type: d.document_type || 'PROPOSAL',
           comments: d.supervisor_comments || '',
           reviewed: !!d.reviewed_at,
+          approved: d.status === 'approved',
           url: d.file_url || '#'
         };
       });
@@ -961,7 +967,7 @@ async function loadData(){
         .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, async () => {
           const { data: refreshed } = await sb
             .from('documents')
-            .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
+            .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at, status')
             .order('uploaded_at', { ascending: false });
           if (refreshed) {
             documents = refreshed.map(d => {
