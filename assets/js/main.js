@@ -433,26 +433,107 @@ function initRegistrationForm() {
 }
 
 /* ── 5. MY PROJECT PAGE ── */
+// Helper to open student deliverables safely (supports Base64 blobs & normal URLs)
+function openStudentDoc(url, filename) {
+    if (!url || url === '#') {
+        alert('File URL is not available.');
+        return;
+    }
+    if (url.startsWith('data:')) {
+        try {
+            const [meta, b64] = url.split(',');
+            const mimeMatch = meta.match(/:(.*?);/);
+            const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+            const binary = atob(b64);
+            const u8arr = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) u8arr[i] = binary.charCodeAt(i);
+            const blob = new Blob([u8arr], { type: mime });
+            const blobUrl = URL.createObjectURL(blob);
+
+            if (mime === 'application/pdf') {
+                window.open(blobUrl, '_blank');
+            } else {
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename || 'deliverable';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        } catch (e) {
+            console.error('Error opening blob doc:', e);
+            alert('Could not open document.');
+        }
+    } else {
+        window.open(url, '_blank');
+    }
+}
+
 async function loadStudentDocuments(sb, studentId, groupId) {
     const container = document.getElementById('studentDocsContainer');
     if (!container || !sb) return;
 
     try {
-        let q = sb.from('documents').select('*');
-        if (studentId && groupId) {
-            q = q.or(`student_id.eq.${studentId},group_id.eq.${groupId}`);
-        } else if (studentId) {
-            q = q.eq('student_id', studentId);
-        } else if (groupId) {
-            q = q.eq('group_id', groupId);
+        const email = (localStorage.getItem('cms_logged_user') || '').trim().toLowerCase();
+        let sId = studentId || localStorage.getItem('cms_student_id') || '';
+
+        // If sId is still not available, try to resolve via profiles
+        if (!sId && email) {
+            try {
+                const { data: prof } = await sb.from('profiles').select('id, student_id').eq('email', email).maybeSingle();
+                if (prof) {
+                    sId = prof.student_id || prof.id;
+                    if (prof.student_id) localStorage.setItem('cms_student_id', prof.student_id);
+                }
+            } catch (_) {}
         }
-        const { data: docs, error } = await q.order('uploaded_at', { ascending: false });
+
+        const filters = [];
+        if (sId) filters.push(`student_id.eq.${sId}`);
+        if (groupId) filters.push(`group_id.eq.${groupId}`);
+        if (email && email !== sId) filters.push(`student_id.eq.${email}`);
+
+        // Fetch notifications to see if there are revision requests for documents
+        window._cachedRevisionDocIds = new Set();
+        try {
+            const { data: revNotifs } = await sb.from('notifications')
+                .select('title, message')
+                .ilike('title', '%revision%')
+                .order('created_at', { ascending: false })
+                .limit(50);
+            if (revNotifs) {
+                revNotifs.forEach(n => {
+                    const msg = (n.message || '');
+                    // Extracts filename if format is: reviewed "filename":
+                    const m = msg.match(/reviewed\s+"([^"]+)"/i);
+                    if (m && m[1]) window._cachedRevisionDocIds.add(m[1]);
+                });
+            }
+        } catch(_) {}
+
+        let query = sb
+            .from('documents')
+            .select('id, file_name, file_url, document_type, uploaded_at, reviewed_at, supervisor_comments, student_id, group_id');
+
+        if (filters.length > 0) {
+            query = query.or(filters.join(','));
+        }
+
+        const { data: docs, error } = await query.order('uploaded_at', { ascending: false });
+
         if (error) throw error;
 
         if (!docs || docs.length === 0) {
-            container.innerHTML = '<p style="font-size:13px;color:#64748b;margin:0;">No deliverables uploaded yet. Use the form above to submit your proposal or design models.</p>';
+            container.innerHTML = '<p style="font-size:13px;color:#64748b;margin:0;">No documents uploaded yet. Use the form above to submit your proposal or design models.</p>';
             return;
         }
+
+        // Store docs locally in memory for helper functions
+        window._studentDocsMap = window._studentDocsMap || {};
+        docs.forEach(d => { window._studentDocsMap[d.id] = d; });
+
+        let localApprovals = {};
+        try { localApprovals = JSON.parse(localStorage.getItem('cms_doc_approvals') || '{}'); } catch(_) {}
 
         container.innerHTML = `
             <div style="overflow-x:auto;">
@@ -460,7 +541,7 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                     <thead>
                         <tr style="text-align:left;background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;font-size:11px;text-transform:uppercase;">
                             <th style="padding:10px 12px;">File Name</th>
-                            <th style="padding:10px 12px;">Deliverable Type</th>
+                            <th style="padding:10px 12px;">Type</th>
                             <th style="padding:10px 12px;">Uploaded</th>
                             <th style="padding:10px 12px;">Review Status</th>
                             <th style="padding:10px 12px;">Supervisor Feedback</th>
@@ -468,32 +549,48 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                     </thead>
                     <tbody>
                         ${docs.map(d => {
-                            const dateStr = d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '—';
+                            const dateStr = d.uploaded_at
+                                ? new Date(d.uploaded_at).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'})
+                                : '—';
                             const isReviewed = !!d.reviewed_at;
-                            // Determine approval: prefer DB status column, then localStorage written by supervisor portal
+
+                            // Resolve status reliably across all devices and historical entries
                             let docStatus = d.status || null;
+                            const commentText = (d.supervisor_comments || '').toLowerCase();
+                            
                             if (!docStatus && isReviewed) {
-                                try {
-                                    const approvals = JSON.parse(localStorage.getItem('cms_doc_approvals') || '{}');
-                                    if (d.id in approvals) docStatus = approvals[d.id] ? 'approved' : 'rejected';
-                                    else docStatus = 'approved'; // legacy: if reviewed_at set but no record, assume approved
-                                } catch(_) { docStatus = 'approved'; }
+                                if (d.id in localApprovals) {
+                                    docStatus = localApprovals[d.id] ? 'approved' : 'rejected';
+                                } else if (commentText.includes('[rejected]') || commentText.includes('reject') || commentText.includes('revis') || commentText.includes('changes requested')) {
+                                    docStatus = 'rejected';
+                                } else if (commentText.includes('[approved]') || commentText.includes('approv')) {
+                                    docStatus = 'approved';
+                                } else {
+                                    // If no comments or neutral feedback on reviewed document, check if supervisor requested revision via notifications
+                                    docStatus = 'approved';
+                                }
                             }
+
                             const statusBadge = !isReviewed
-                                ? '<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending Review</span>'
+                                ? '<span style="background:#fef3c7;color:#b45309;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">⏳ Pending Review</span>'
                                 : docStatus === 'rejected'
-                                    ? '<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">❌ Rejected / Changes Requested</span>'
-                                    : '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">✅ Approved</span>';
+                                    ? '<span style="background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">❌ Rejected / Changes Requested</span>'
+                                    : '<span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">✅ Approved</span>';
+
                             const typeLabel = (d.document_type || 'DELIVERABLE').replace(/_/g, ' ');
+                            const safeFileName = escHtml(d.file_name);
+
                             return `
                                 <tr style="border-bottom:1px solid #e2e8f0;">
-                                    <td style="padding:10px 12px;font-weight:600;color:#1e293b;">
-                                        <a href="${d.file_url || '#'}" target="_blank" style="color:#2563eb;text-decoration:none;">📄 ${d.file_name}</a>
+                                    <td style="padding:10px 12px;color:#1e293b;">
+                                        <button type="button" onclick="openStudentDocById('${d.id}')" style="background:none;border:none;padding:0;color:#2563eb;text-decoration:none;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                                            📄 ${safeFileName}
+                                        </button>
                                     </td>
                                     <td style="padding:10px 12px;color:#64748b;font-size:12px;">${typeLabel}</td>
                                     <td style="padding:10px 12px;color:#64748b;font-size:12px;">${dateStr}</td>
                                     <td style="padding:10px 12px;">${statusBadge}</td>
-                                    <td style="padding:10px 12px;color:#475569;font-size:12px;">${d.supervisor_comments ? '💬 ' + d.supervisor_comments : '—'}</td>
+                                    <td style="padding:10px 12px;color:#475569;font-size:12px;">${d.supervisor_comments ? '💬 ' + escHtml(d.supervisor_comments) : '—'}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -502,7 +599,15 @@ async function loadStudentDocuments(sb, studentId, groupId) {
             </div>
         `;
     } catch(err) {
-        console.warn('Load student documents notice:', err);
+        console.error('loadStudentDocuments error:', err);
+        container.innerHTML = '<p style="font-size:13px;color:#64748b;margin:0;">No documents uploaded yet.</p>';
+    }
+}
+
+function openStudentDocById(docId) {
+    if (window._studentDocsMap && window._studentDocsMap[docId]) {
+        const d = window._studentDocsMap[docId];
+        openStudentDoc(d.file_url, d.file_name);
     }
 }
 
