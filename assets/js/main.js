@@ -169,14 +169,40 @@ async function initDashboardTracker() {
 
     let groupInfo = null;
     let marks = null;
+    let hasApprovedDoc = false;
 
     if (sb) {
         try {
             groupInfo = await getStudentGroup(sb, email, studentId);
             const sId = groupInfo?.studentId || studentId;
+            const grpId = groupInfo?.group?.id;
             if (sId) {
                 const { data: mk } = await sb.from('marks').select('*').eq('student_id', sId).maybeSingle();
                 marks = mk;
+
+                // Check if this student has any reviewed (approved) document
+                // We look for any document that has a reviewed_at set (has been reviewed by supervisor)
+                // and whose supervisor_comments does NOT start with [REJECTED]
+                try {
+                    const docFilters = [];
+                    if (sId) docFilters.push(`student_id.eq.${sId}`);
+                    if (grpId) docFilters.push(`group_id.eq.${grpId}`);
+                    if (email && email !== sId) docFilters.push(`student_id.eq.${email}`);
+
+                    let docQuery = sb.from('documents')
+                        .select('id, reviewed_at, supervisor_comments')
+                        .not('reviewed_at', 'is', null);
+                    if (docFilters.length > 0) docQuery = docQuery.or(docFilters.join(','));
+
+                    const { data: reviewedDocs } = await docQuery;
+                    if (reviewedDocs && reviewedDocs.length > 0) {
+                        // Has at least one approved doc (not flagged as rejected)
+                        hasApprovedDoc = reviewedDocs.some(d => {
+                            const c = (d.supervisor_comments || '').trim().toUpperCase();
+                            return !c.startsWith('[REJECTED]');
+                        });
+                    }
+                } catch(_) {}
             }
         } catch(e) { console.warn(e); }
     }
@@ -226,6 +252,9 @@ async function initDashboardTracker() {
     // 2. Compute dynamic milestone completion percentage
     let completedSteps = 1; // Roster placed upon student registration
     if (grp && grp.topic_status === 'APPROVED') completedSteps = 2;
+    // Step 3: advances when student has at least one approved proposal document
+    if (completedSteps >= 2 && hasApprovedDoc) completedSteps = 3;
+    // Also advance step 3 if defense is scheduled (legacy path)
     if (stStatus && (stStatus.defense_status === 'SCHEDULED' || stStatus.defense_status === 'PENDING_COORDINATOR_REVIEW')) completedSteps = 3;
     if (marks || (stStatus && stStatus.completion_percentage === 100)) completedSteps = 4;
 
