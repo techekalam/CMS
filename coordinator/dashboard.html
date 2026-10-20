@@ -116,25 +116,6 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
 body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,body.student-mode .topbar-right{display:none!important}
 .view{display:none}
 .view.active{display:block}
-/* ===== NOTIFICATIONS ===== */
-.notif-bell{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:16px;padding:6px 10px;border-radius:8px;cursor:pointer;position:relative;flex-shrink:0}
-.notif-bell:hover{background:rgba(255,255,255,0.2)}
-.notif-badge{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;font-size:10px;font-weight:700;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy-solid)}
-.notif-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:default}
-.notif-item:last-child{border-bottom:none}
-.notif-item.unread{background:#f0f7ff}
-.notif-item:hover{background:#f8fafc}
-.notif-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.notif-dot.success{background:#16a34a}
-.notif-dot.warning{background:#d97706}
-.notif-dot.error{background:#dc2626}
-.notif-dot.info{background:#2563eb}
-.notif-body{flex:1;min-width:0}
-.notif-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.notif-msg{font-size:12px;color:var(--muted);line-height:1.5}
-.notif-time{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
-.notif-empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px}
-.notif-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 /* ===== TABLET — max 768px ===== */
 @media(max-width:768px){
   /* Hamburger toggle */
@@ -253,9 +234,6 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
   </div>
   <div class="dash-header-right">
     <span class="dash-portal-tag">Coordinator Portal</span>
-    <button class="notif-bell" id="notifBell" onclick="navigate('notifications')" title="Notifications" aria-label="Notifications">
-      🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>
-    </button>
     <div class="dash-user-pill">
       <div class="dash-user-info">
         <span class="dash-user-name" id="coName"></span>
@@ -276,9 +254,6 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
     <div class="item" data-view="marks" onclick="navigate('marks')">Marks Approval</div>
     <div class="item" data-view="legacy" onclick="navigate('legacy')">Legacy Boards</div>
     <div class="item" data-view="certs" onclick="navigate('certs')">Certificates</div>
-    <div class="item" data-view="notifications" onclick="navigate('notifications')" id="navNotifications">
-      🔔 Notifications <span class="notif-side-badge" id="notifSideBadge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px">0</span>
-    </div>
     <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
       <a href="../login.html" style="color:#ef4444; text-decoration:none; display:block; padding:10px 12px; border-radius:8px; font-size:13px; font-weight:600;">Logout</a>
     </div>
@@ -316,10 +291,6 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
         <div class="dash-card" onclick="navigate('certs')"><h3>Certificates</h3>
           <p>Issued automatically when a group is complete.</p>
           <div class="count" id="cardCerts">0</div>
-        </div>
-        <div class="dash-card" onclick="navigate('notifications')"><h3>🔔 Notifications</h3>
-          <p>System alerts, student updates, and activity log.</p>
-          <div class="count" id="cardNotifs">0</div>
         </div>
       </div>
     </div>
@@ -434,34 +405,6 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
     <div class="view" id="view-mycerts">
       <div class="header"><h2>My Certificates</h2></div>
       <div id="myCertList"></div>
-    </div>
-
-    <!-- NOTIFICATIONS -->
-    <div class="view" id="view-notifications">
-      <div class="header">
-        <div>
-          <h2>Notifications</h2>
-          <p class="note" style="margin-top:4px">System alerts, student updates, and coordinator activity.</p>
-        </div>
-        <div class="actions">
-          <button class="btn-ghost" onclick="notifMarkAllRead()">Mark All Read</button>
-          <button class="btn-err" onclick="notifClearAll()">Clear All</button>
-        </div>
-      </div>
-      <div id="banner-notifications"></div>
-      <div class="notif-toolbar">
-        <div class="chips" id="notifChips">
-          <button class="btn-primary" onclick="notifFilter('all')" id="nfAll">All</button>
-          <button class="btn-ghost" onclick="notifFilter('unread')" id="nfUnread">Unread</button>
-          <button class="btn-ghost" onclick="notifFilter('success')" id="nfSuccess">✅ Success</button>
-          <button class="btn-ghost" onclick="notifFilter('warning')" id="nfWarning">⚠️ Warning</button>
-          <button class="btn-ghost" onclick="notifFilter('info')" id="nfInfo">ℹ️ Info</button>
-        </div>
-        <span id="notifCount" style="font-size:12px;color:var(--muted)"></span>
-      </div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <div id="notifList"></div>
-      </div>
     </div>
 
   </div>
