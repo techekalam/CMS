@@ -339,7 +339,92 @@ async function issueCertificatesForGroup(g){
   }
   return fresh.length;
 }
+
+async function populateLegacyBoardForGroup(g) {
+  if (!g || g.status !== 'COMPLETE' || g.mark == null) return 0;
+  
+  let targetBoard = legacyBoardsList && legacyBoardsList.length ? legacyBoardsList[0] : null;
+  if (!targetBoard) {
+    const newBoardId = 'lb' + Date.now();
+    targetBoard = {
+      id: newBoardId,
+      title: 'Official Capstone Assessment Board 2026/2027',
+      year: '2026/2027',
+      cohort: 'BSc CS & IT / SE Cohort',
+      entries: []
+    };
+    legacyBoardsList.push(targetBoard);
+    if (sb) {
+      try {
+        await sb.from('legacy_boards').insert({
+          id: targetBoard.id,
+          title: targetBoard.title,
+          year: targetBoard.year,
+          cohort: targetBoard.cohort
+        });
+      } catch (e) { console.warn('Insert legacy board notice:', e); }
+    }
+  }
+
+  targetBoard.entries = targetBoard.entries || [];
+  const freshEntries = [];
+
+  (g.students || []).forEach(s => {
+    const sId = s.id || s.student_id;
+    const sName = s.name;
+    const exists = targetBoard.entries.some(e => 
+      (e.studentId && sId && e.studentId.toString().toLowerCase() === sId.toString().toLowerCase()) ||
+      (e.name && sName && e.name.toLowerCase() === sName.toLowerCase() && e.group === g.number)
+    );
+    if (exists) return;
+
+    const rec = {
+      id: 'lr_' + (sId ? sId.replace(/[^a-zA-Z0-9]/g, '_') : Math.random().toString(36).substring(2, 9)),
+      boardId: targetBoard.id,
+      name: sName || 'Student',
+      studentId: sId || '',
+      course: s.course || 'BSCS',
+      group: g.number || '',
+      project: g.title || 'Capstone Project',
+      mark: g.mark != null ? g.mark : 0
+    };
+
+    targetBoard.entries.push(rec);
+    freshEntries.push(rec);
+  });
+
+  if (sb && freshEntries.length > 0) {
+    try {
+      await sb.from('legacy_board_records').upsert(freshEntries.map(r => ({
+        id: r.id,
+        board_id: targetBoard.id,
+        student_name: r.name,
+        student_id: r.studentId,
+        course: r.course,
+        group_number: r.group,
+        project_title: r.project,
+        mark: r.mark
+      })));
+    } catch (e) {
+      console.warn('Upsert legacy board records notice:', e);
+    }
+  }
+
+  return freshEntries.length;
+}
+
+async function syncAllLegacyBoards() {
+  let count = 0;
+  for (const g of groups) {
+    if (g.status === 'COMPLETE' && g.mark != null) {
+      count += await populateLegacyBoardForGroup(g);
+    }
+  }
+  return count;
+}
+
 async function syncAllCertificates(){
+
   let n = 0;
   for(const g of groups) n += await issueCertificatesForGroup(g);
   return n;
@@ -679,9 +764,10 @@ async function saveMark(id){
   const g = groups.find(x=>x.id===id); g.mark = val; g.status = status;
   if(sb) { try{ await sb.from('groups').update({mark:val, status}).eq('id', id); }catch(e){} }
   const n = await issueCertificatesForGroup(g);
+  await populateLegacyBoardForGroup(g);
   closeModal();
   banner('banner-groups', n ? `Group ${g.number} complete: ${n} certificate${n>1?'s':''} issued automatically.` : 'Group updated.', 'ok');
-  renderGroups(); renderCerts();
+  renderGroups(); renderCerts(); renderLegacy();
 }
 
 async function loadData(){
@@ -743,6 +829,7 @@ async function loadData(){
   } catch(e) {}
   loadLocal();
   await syncAllCertificates();
+  await syncAllLegacyBoards();
   renderIntakes(); renderGroups(); renderDefenses(); renderMarks(); renderLegacy(); renderCerts();
   if(STUDENT_ID){ document.body.classList.add('student-mode'); renderMyCerts(); navigate('mycerts'); }
   else navigate('dashboard');
