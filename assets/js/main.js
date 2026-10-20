@@ -493,26 +493,37 @@ async function loadStudentDocuments(sb, studentId, groupId) {
         if (groupId) filters.push(`group_id.eq.${groupId}`);
         if (email && email !== sId) filters.push(`student_id.eq.${email}`);
 
-        // Fetch recent document review notifications to check the latest action per document
-        // Map from document filename to latest action: 'approved' | 'rejected'
-        const notifDocStatusMap = {};
+        // Fetch document review notifications for THIS student only
+        // Map from document ID (parsed from message) to latest status: 'approved' | 'rejected'
+        // Falls back to filename-keyed map if ID is not in message
+        const notifDocStatusById = {};
+        const notifDocStatusByName = {};
+        const studentEmail = email;
         try {
-            const { data: reviewNotifs } = await sb.from('notifications')
-                .select('title, message, created_at')
+            let notifQuery = sb.from('notifications')
+                .select('title, message, created_at, recipient_email')
                 .or('title.ilike.%Document Approved%,title.ilike.%Document Revision Requested%')
                 .order('created_at', { ascending: false })
-                .limit(100);
+                .limit(200);
+            // Filter to only this student's notifications if we have their email
+            if (studentEmail) {
+                notifQuery = notifQuery.eq('recipient_email', studentEmail);
+            }
+            const { data: reviewNotifs } = await notifQuery;
 
             if (reviewNotifs) {
                 reviewNotifs.forEach(n => {
                     const msg = (n.message || '');
+                    const isRej = (n.title || '').toLowerCase().includes('revision') || (n.title || '').toLowerCase().includes('reject');
+                    const status = isRej ? 'rejected' : 'approved';
+
+                    // Try to extract filename from message: Supervisor X reviewed "filename": comment
                     const m = msg.match(/reviewed\s+"([^"]+)"/i);
                     if (m && m[1]) {
                         const fname = m[1].toLowerCase().trim();
-                        // Only set if not already set by a newer notification
-                        if (!notifDocStatusMap[fname]) {
-                            const isRej = (n.title || '').toLowerCase().includes('revision') || (n.title || '').toLowerCase().includes('reject');
-                            notifDocStatusMap[fname] = isRej ? 'rejected' : 'approved';
+                        // Only store the first (newest) notification per filename
+                        if (!notifDocStatusByName[fname]) {
+                            notifDocStatusByName[fname] = status;
                         }
                     }
                 });
@@ -562,33 +573,34 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                                 : '—';
                             const isReviewed = !!d.reviewed_at;
 
-                            // Resolve status cleanly and accurately
-                            let docStatus = d.status || null;
+                            // Resolve status from supervisor_comments prefix (most reliable source)
                             const commentText = (d.supervisor_comments || '').trim();
                             const lowerComment = commentText.toLowerCase();
                             const fnameKey = (d.file_name || '').toLowerCase().trim();
+                            let docStatus = null;
 
-                            if (!docStatus && isReviewed) {
-                                // 1. Direct explicit tags saved in supervisor comments
-                                if (commentText.startsWith('[REJECTED]') || lowerComment.includes('[rejected]')) {
+                            if (isReviewed) {
+                                // Priority 1: Explicit [APPROVED] / [REJECTED] prefix in supervisor_comments
+                                // This is written by setDocStatus() and is the most reliable cross-device signal
+                                if (commentText.startsWith('[REJECTED]') || lowerComment.startsWith('[rejected]')) {
                                     docStatus = 'rejected';
-                                } else if (commentText.startsWith('[APPROVED]') || lowerComment.includes('[approved]')) {
+                                } else if (commentText.startsWith('[APPROVED]') || lowerComment.startsWith('[approved]')) {
                                     docStatus = 'approved';
-                                } 
-                                // 2. Check local supervisor machine cache
+                                }
+                                // Priority 2: Notifications filtered to this student's email, by filename
+                                else if (fnameKey && notifDocStatusByName[fnameKey]) {
+                                    docStatus = notifDocStatusByName[fnameKey];
+                                }
+                                // Priority 3: localStorage cache (supervisor device only — last resort for legacy)
                                 else if (d.id in localApprovals) {
                                     docStatus = localApprovals[d.id] ? 'approved' : 'rejected';
                                 }
-                                // 3. Check notifications specifically for this exact document name
-                                else if (fnameKey && notifDocStatusMap[fnameKey]) {
-                                    docStatus = notifDocStatusMap[fnameKey];
-                                }
-                                // 4. Natural language cues in comments
-                                else if (lowerComment.includes('reject') || lowerComment.includes('revis') || lowerComment.includes('try again') || lowerComment.includes('not good') || lowerComment.includes('changes requested')) {
+                                // Priority 4: Natural language in comments (conservative — only obvious rejection words)
+                                else if (lowerComment.includes('reject') || lowerComment.includes('revis') || lowerComment.includes('try again') || lowerComment.includes('not good') || lowerComment.includes('changes requested') || lowerComment.includes('redo') || lowerComment.includes('re-do')) {
                                     docStatus = 'rejected';
-                                } else if (lowerComment.includes('approv') || lowerComment.includes('great') || lowerComment.includes('good') || lowerComment.includes('well done') || lowerComment.includes('excellent')) {
-                                    docStatus = 'approved';
-                                } else {
+                                }
+                                // Priority 5: Default reviewed = approved (supervisor approved without typing prefix)
+                                else {
                                     docStatus = 'approved';
                                 }
                             }
@@ -601,6 +613,8 @@ async function loadStudentDocuments(sb, studentId, groupId) {
 
                             const typeLabel = (d.document_type || 'DELIVERABLE').replace(/_/g, ' ');
                             const safeFileName = escHtml(d.file_name);
+                            // Strip [APPROVED]/[REJECTED] prefix from feedback shown to student
+                            const displayComment = (d.supervisor_comments || '').replace(/^\[(APPROVED|REJECTED)\]\s*/i, '').trim();
 
                             return `
                                 <tr style="border-bottom:1px solid #e2e8f0;">
@@ -612,7 +626,7 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                                     <td style="padding:10px 12px;color:#64748b;font-size:12px;">${typeLabel}</td>
                                     <td style="padding:10px 12px;color:#64748b;font-size:12px;">${dateStr}</td>
                                     <td style="padding:10px 12px;">${statusBadge}</td>
-                                    <td style="padding:10px 12px;color:#475569;font-size:12px;">${d.supervisor_comments ? '💬 ' + escHtml(d.supervisor_comments) : '—'}</td>
+                                    <td style="padding:10px 12px;color:#475569;font-size:12px;">${displayComment ? '💬 ' + escHtml(displayComment) : '—'}</td>
                                 </tr>
                             `;
                         }).join('')}
