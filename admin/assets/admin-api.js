@@ -273,13 +273,33 @@ async function adminLoadStudents() {
     const rows = (data || []).map(s => {
       const badge = s.is_active ? _badge('Eligible', 'green') : _badge('Blocked', 'red');
       const sid = s.student_id || s.id.slice(0, 8).toUpperCase();
-      return `<td>${sid}</td><td>${s.name}</td><td>${s.programme || '—'}</td><td>Year 4</td><td>${badge}</td><td>—</td>`;
+      const delBtn = `<button onclick="adminDeleteStudent('${s.id}', '${(s.name||'').replace(/'/g,'')}', '${s.student_id||''}')" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Delete</button>`;
+      return `<td>${sid}</td><td>${s.name}</td><td>${s.programme || '—'}</td><td>Year 4</td><td>${badge}</td><td>—</td><td>${delBtn}</td>`;
     });
 
     _loadTable('studentTable', 'studentCount', rows);
   } catch (e) {
     console.error('[Admin] loadStudents:', e);
     showToast('Failed to load students', 'error');
+  }
+}
+
+async function adminDeleteStudent(id, name, studentId) {
+  if (!confirm('Delete student "' + name + '"? This cannot be undone.')) return;
+  const sb = _sb();
+  if (!sb) { showToast('Database not connected', 'error'); return; }
+  try {
+    if (studentId) {
+      try { await sb.from('group_students').delete().eq('student_id', studentId); } catch (_) {}
+      try { await sb.from('student_status').delete().eq('student_id', studentId); } catch (_) {}
+    }
+    const { error } = await sb.from('profiles').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Student "' + name + '" deleted successfully', 'success');
+    adminLoadStudents();
+  } catch (e) {
+    console.error('[Admin] deleteStudent:', e);
+    showToast('Delete failed: ' + e.message, 'error');
   }
 }
 
@@ -547,13 +567,30 @@ async function adminLoadGroups() {
       const members = g.group_students || [];
       const preview = members.slice(0, 2).map(m => m.name).join(', ') + (members.length > 2 ? ` +${members.length - 2}` : '');
       const badge = g.status === 'COMPLETE' ? _badge('Complete', 'green') : _badge('In Progress', 'blue');
-      return `<td>${g.group_number}</td><td>${g.project_title}</td><td>${members.length}</td><td>${preview || '—'}</td><td>${g.supervisor_name || '—'}</td><td>${badge}</td>`;
+      const groupNum = g.group_number || 'Group';
+      const delBtn = `<button onclick="adminDeleteGroup('${g.id}', '${groupNum.replace(/'/g,'')}')" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Delete</button>`;
+      return `<td>${g.group_number}</td><td>${g.project_title}</td><td>${members.length}</td><td>${preview || '—'}</td><td>${g.supervisor_name || '—'}</td><td>${badge}</td><td>${delBtn}</td>`;
     });
 
     _loadTable('groupTable', 'groupCount', rows);
   } catch (e) {
     console.error('[Admin] loadGroups:', e);
     showToast('Failed to load groups', 'error');
+  }
+}
+
+async function adminDeleteGroup(id, groupNumber) {
+  if (!confirm('Delete group "' + groupNumber + '"? This cannot be undone.')) return;
+  const sb = _sb();
+  if (!sb) { showToast('Database not connected', 'error'); return; }
+  try {
+    const { error } = await sb.from('groups').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Group "' + groupNumber + '" deleted successfully', 'success');
+    adminLoadGroups();
+  } catch (e) {
+    console.error('[Admin] deleteGroup:', e);
+    showToast('Delete failed: ' + e.message, 'error');
   }
 }
 
@@ -625,13 +662,30 @@ async function adminLoadProjects() {
         : p.topic_status === 'REJECTED' ? _badge('Rejected', 'red')
         : _badge('Pending', 'amber');
       const stage = p.status === 'COMPLETE' ? 'Final Review' : 'Development';
-      return `<td>${p.id.slice(0,8).toUpperCase()}</td><td>${p.project_title}</td><td>${p.category || '—'}</td><td>${p.group_number}</td><td>${p.supervisor_name || '—'}</td><td>${statusBadge}</td><td>${stage}</td>`;
+      const projTitle = p.project_title || 'Project';
+      const delBtn = `<button onclick="adminDeleteProject('${p.id}', '${projTitle.replace(/'/g,'')}')" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Delete</button>`;
+      return `<td>${p.id.slice(0,8).toUpperCase()}</td><td>${p.project_title}</td><td>${p.category || '—'}</td><td>${p.group_number}</td><td>${p.supervisor_name || '—'}</td><td>${statusBadge}</td><td>${stage}</td><td>${delBtn}</td>`;
     });
 
     _loadTable('projectTable', 'projectCount', rows);
   } catch (e) {
     console.error('[Admin] loadProjects:', e);
     showToast('Failed to load projects', 'error');
+  }
+}
+
+async function adminDeleteProject(id, title) {
+  if (!confirm('Delete project "' + title + '"? This cannot be undone.')) return;
+  const sb = _sb();
+  if (!sb) { showToast('Database not connected', 'error'); return; }
+  try {
+    const { error } = await sb.from('groups').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Project "' + title + '" deleted successfully', 'success');
+    adminLoadProjects();
+  } catch (e) {
+    console.error('[Admin] deleteProject:', e);
+    showToast('Delete failed: ' + e.message, 'error');
   }
 }
 
@@ -695,13 +749,30 @@ async function adminLoadCycles() {
         : _badge('Auto', 'amber');
       const start = c.start_date || '—';
       const end = c.end_date || '—';
-      return `<td>${c.id}</td><td>${c.year}</td><td>${start}</td><td>${end}</td><td>${badge}</td><td>—</td>`;
+      const cycleTitle = c.name || c.year || c.id;
+      const delBtn = `<button onclick="adminDeleteCycle('${c.id}', '${cycleTitle.replace(/'/g,'')}')" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Delete</button>`;
+      return `<td>${c.id}</td><td>${c.year}</td><td>${start}</td><td>${end}</td><td>${badge}</td><td>—</td><td>${delBtn}</td>`;
     });
 
     _loadTable('cycleTable', 'cycleCount', rows);
   } catch (e) {
     console.error('[Admin] loadCycles:', e);
     showToast('Failed to load cycles', 'error');
+  }
+}
+
+async function adminDeleteCycle(id, name) {
+  if (!confirm('Delete capstone cycle "' + name + '"? This cannot be undone.')) return;
+  const sb = _sb();
+  if (!sb) { showToast('Database not connected', 'error'); return; }
+  try {
+    const { error } = await sb.from('intakes').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Cycle "' + name + '" deleted successfully', 'success');
+    adminLoadCycles();
+  } catch (e) {
+    console.error('[Admin] deleteCycle:', e);
+    showToast('Delete failed: ' + e.message, 'error');
   }
 }
 
@@ -796,6 +867,148 @@ async function adminUpdatePassword(btn) {
 // 8. AUTO-INIT — load table data on page load
 // ============================================================
 
+// ============================================================
+// 9. PROGRAM MANAGEMENT — Academic Programs
+// ============================================================
+
+const DEFAULT_PROGRAMS = [
+  { code: 'BSCS', name: 'Bachelor of Science in Computer Science', shortCode: 'CS', school: 'School of Computing & Technology', status: 'Active', level: 'Year 3' },
+  { code: 'BIT',  name: 'Bachelor of Information Technology',       shortCode: 'IT', school: 'School of Computing & Technology', status: 'Active', level: 'Year 3' },
+  { code: 'BSE',  name: 'Bachelor of Software Engineering',        shortCode: 'SE', school: 'School of Computing & Technology', status: 'Active', level: 'Year 4' },
+  { code: 'BBA',  name: 'Bachelor of Business Administration',     shortCode: 'BA', school: 'School of Business',               status: 'Active', level: 'Year 3' }
+];
+
+function _getStoredPrograms() {
+  try {
+    const raw = localStorage.getItem('cms_academic_programs');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.error('Failed to parse cms_academic_programs:', e);
+  }
+  localStorage.setItem('cms_academic_programs', JSON.stringify(DEFAULT_PROGRAMS));
+  return DEFAULT_PROGRAMS;
+}
+
+function _saveStoredPrograms(programs) {
+  try {
+    localStorage.setItem('cms_academic_programs', JSON.stringify(programs));
+  } catch (e) {
+    console.error('Failed to save cms_academic_programs:', e);
+  }
+}
+
+async function adminLoadPrograms() {
+  const table = document.getElementById('programTable');
+  if (!table) return;
+
+  let programs = [];
+  const sb = _sb();
+  if (sb) {
+    try {
+      const { data, error } = await sb.from('programs').select('*').order('code');
+      if (!error && data && data.length > 0) {
+        programs = data;
+      }
+    } catch (e) {
+      // Supabase table does not exist or network issue; fallback to local storage
+    }
+  }
+
+  if (programs.length === 0) {
+    programs = _getStoredPrograms();
+  }
+
+  const rows = (programs || []).map(p => {
+    const isActive = (p.status === 'Active' || p.status === 'ACTIVE');
+    const badge = isActive ? _badge('Active', 'green') : _badge('Inactive', 'gray');
+    const pCode = p.code || '—';
+    const delBtn = `<button onclick="adminDeleteProgram('${pCode}', '${(p.name || pCode).replace(/'/g, '')}')" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Delete</button>`;
+    return `<td>${pCode}</td><td>${p.name || '—'}</td><td>${p.shortCode || p.short_code || '—'}</td><td>${p.school || '—'}</td><td>${badge}</td><td>${p.level || '—'}</td><td>${delBtn}</td>`;
+  });
+
+  _loadTable('programTable', 'programCount', rows);
+}
+
+async function adminCreateProgram(btn) {
+  const code      = _val('newProgCode');
+  const name      = _val('newProgName');
+  const shortCode = _val('newProgShortCode');
+  const school    = _val('newProgSchool');
+  const level     = _val('newProgLevel');
+  const status    = _val('newProgStatus');
+
+  if (!code || !name) {
+    showToast('Program code and name are required', 'error');
+    return;
+  }
+
+  _setBtn(btn, true);
+
+  try {
+    const newProg = {
+      code: code.toUpperCase(),
+      name: name,
+      shortCode: shortCode || code.slice(0, 4).toUpperCase(),
+      short_code: shortCode || code.slice(0, 4).toUpperCase(),
+      school: school,
+      level: level,
+      status: status || 'Active',
+      created_at: new Date().toISOString()
+    };
+
+    const current = _getStoredPrograms();
+    const existingIdx = current.findIndex(p => (p.code || '').toUpperCase() === newProg.code);
+    if (existingIdx !== -1) {
+      current[existingIdx] = newProg;
+    } else {
+      current.push(newProg);
+    }
+    _saveStoredPrograms(current);
+
+    const sb = _sb();
+    if (sb) {
+      try {
+        await sb.from('programs').upsert(newProg);
+      } catch (err) {}
+    }
+
+    showToast('Program "' + name + '" added successfully', 'success');
+    _closeModal(btn);
+    _clearFields(['newProgCode', 'newProgName', 'newProgShortCode']);
+    adminLoadPrograms();
+  } catch (e) {
+    console.error('[Admin] createProgram:', e);
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    _setBtn(btn, false);
+  }
+}
+
+async function adminDeleteProgram(code, name) {
+  if (!confirm('Delete program "' + (name || code) + '"? This cannot be undone.')) return;
+  try {
+    const current = _getStoredPrograms();
+    const updated = current.filter(p => (p.code || '').toUpperCase() !== (code || '').toUpperCase());
+    _saveStoredPrograms(updated);
+
+    const sb = _sb();
+    if (sb) {
+      try {
+        await sb.from('programs').delete().eq('code', code);
+      } catch (err) {}
+    }
+
+    showToast('Program "' + (name || code) + '" deleted successfully', 'success');
+    adminLoadPrograms();
+  } catch (e) {
+    console.error('[Admin] deleteProgram:', e);
+    showToast('Delete failed: ' + e.message, 'error');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   // Determine which page we're on by checking for known table IDs
   if (document.getElementById('usersTable'))    adminLoadUsers();
@@ -804,4 +1017,5 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('groupTable'))    adminLoadGroups();
   if (document.getElementById('projectTable'))  adminLoadProjects();
   if (document.getElementById('cycleTable'))    adminLoadCycles();
+  if (document.getElementById('programTable'))  adminLoadPrograms();
 });
