@@ -79,7 +79,7 @@
   </nav>
 </aside>
 <main class="main">
-    <section class="page"><div class="page-head"><div><h2>Administrative Reports</h2><p>Generate and review operational reports across registration, groups, supervisors, assessments, projects, and completion.</p></div><div class="actions"><button class="btn" onclick="showToast('Exporting CSV data...','info')">Export CSV</button><button class="btn btn-primary" onclick="showToast('Report generated successfully','success')">Generate Report</button></div></div>
+    <section class="page"><div class="page-head"><div><h2>Administrative Reports</h2><p>Generate and review operational reports across registration, groups, supervisors, assessments, projects, and completion.</p></div><div class="actions"><button class="btn" onclick="adminExportReport('excel')">Export Excel (.xlsx)</button><button class="btn" onclick="adminExportReport('pdf')">Export PDF (.pdf)</button><button class="btn" onclick="adminExportReport('csv')">Export CSV</button><button class="btn btn-primary" onclick="adminGenerateReport()">Generate Report</button></div></div>
 <div class="grid three"><a class="card" href="students.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Registered Students</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Current cycle</div></a><a class="card" href="groups.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Project Groups</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Current cycle</div></a><a class="card" href="staff.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Supervisor Workload</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Active supervisors</div></a><a class="card" href="historical-projects.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Completed Projects</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Historical archive</div></a><a class="card" href="projects.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Pending Stages</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Require follow-up</div></a><a class="card" href="reports.html" style="padding:18px;display:block"><div class="label" style="font-size:12px;color:var(--muted)">Final Grades</div><div class="value" style="font-size:28px;font-weight:800;margin:8px 0">0</div><div class="helper">Published records</div></a></div>
 <div style="height:16px"></div>
 <div class="grid two">
@@ -88,7 +88,13 @@
 </div></section>
 </main>
 </div>
-<script src="assets/admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="assets/admin.js?v=2"></script>
+<script src="assets/admin-api.js?v=2"></script>
 </body>
 </html>
 

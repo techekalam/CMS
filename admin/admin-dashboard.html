@@ -86,10 +86,10 @@
     <section class="page">
 <div class="page-head"><div><h2>Administrator Dashboard</h2><p>Central control center for users, capstone operations, configuration, and system activity.</p></div><div class="actions"><a class="btn" href="reports.html">View Reports</a><a class="btn btn-primary" href="user-management.html">Manage Users</a></div></div>
 <div class="grid stats">
-  <div class="card stat"><div class="label">Active Users</div><div class="value">0</div><div class="sub"></div></div>
-  <div class="card stat"><div class="label">Registered Students</div><div class="value">0</div><div class="sub"></div></div>
-  <div class="card stat"><div class="label">Active Projects</div><div class="value">0</div><div class="sub"></div></div>
-  <div class="card stat"><div class="label">Open Alerts</div><div class="value">0</div><div class="sub"><span class="down trend"></span></div></div>
+  <div class="card stat"><div class="label">Active Users</div><div class="value">0</div><div class="sub">Total registered accounts</div></div>
+  <div class="card stat"><div class="label">Registered Students</div><div class="value">0</div><div class="sub">Student accounts</div></div>
+  <div class="card stat"><div class="label">Active Projects</div><div class="value">0</div><div class="sub">Formed project groups</div></div>
+  <div class="card stat"><div class="label">Supervisors</div><div class="value">0</div><div class="sub">Assigned academic staff</div></div>
 </div>
 <div class="grid two">
  <div class="card">
@@ -125,52 +125,140 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase.js"></script>
-<script src="assets/admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="assets/admin.js?v=2"></script>
 <script>
-(async function loadDashboardStats() {
-  const sb = window.CMS_SB && window.CMS_SB.client();
-  if (!sb) return;
-
-  try {
-    // Active Users (all profiles)
-    const { count: userCount } = await sb.from('profiles').select('*', { count: 'exact', head: true });
-
-    // Registered Students
-    const { count: studentCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
-
-    // Active Groups (as proxy for projects)
-    const { count: groupCount } = await sb.from('groups').select('*', { count: 'exact', head: true });
-
-    // Supervisors
-    const { count: supCount } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'supervisor');
-
-    // Update stat cards
-    const stats = document.querySelectorAll('.card.stat');
-    if (stats[0]) { stats[0].querySelector('.value').textContent = userCount || 0; stats[0].querySelector('.sub').textContent = 'Total registered accounts'; }
-    if (stats[1]) { stats[1].querySelector('.value').textContent = studentCount || 0; stats[1].querySelector('.sub').textContent = 'Student accounts'; }
-    if (stats[2]) { stats[2].querySelector('.value').textContent = groupCount || 0; stats[2].querySelector('.label').textContent = 'Active Groups'; stats[2].querySelector('.sub').textContent = 'Formed project groups'; }
-    if (stats[3]) { stats[3].querySelector('.value').textContent = supCount || 0; stats[3].querySelector('.label').textContent = 'Supervisors'; stats[3].querySelector('.sub').textContent = 'Assigned staff'; }
-
-    // KPI bars
-    const totalStudents = studentCount || 0;
-    const groupedStudents = groupCount ? groupCount * 4 : 0;
-    const regPct = totalStudents > 0 ? Math.min(100, Math.round((totalStudents / totalStudents) * 100)) : 0;
-
-    // Groups with supervisors
-    const { count: supGroups } = await sb.from('groups').select('*', { count: 'exact', head: true }).not('supervisor_id', 'is', null);
-    const supPct = groupCount > 0 ? Math.round(((supGroups || 0) / groupCount) * 100) : 0;
-
-    const kpiRows = document.querySelectorAll('.kpi-row');
-    const progBars = document.querySelectorAll('.progress span');
-    if (kpiRows[0]) { kpiRows[0].querySelector('strong').textContent = '100%'; }
-    if (progBars[0]) { progBars[0].style.width = '100%'; }
-    if (kpiRows[2]) { kpiRows[2].querySelector('strong').textContent = supPct + '%'; }
-    if (progBars[2]) { progBars[2].style.width = supPct + '%'; }
-
-  } catch (e) {
-    console.error('Dashboard stats error:', e);
+async function loadDashboardStats() {
+  function getSbClient() {
+    if (window.CMS_SB && window.CMS_SB.client) {
+      try {
+        const c = window.CMS_SB.client();
+        if (c) return c;
+      } catch(e) {}
+    }
+    if (typeof supabase !== 'undefined' && window.CMS_CONFIG) {
+      try {
+        return supabase.createClient(window.CMS_CONFIG.url, window.CMS_CONFIG.anonKey);
+      } catch(e) {}
+    }
+    return null;
   }
-})();
+
+  const sb = getSbClient();
+  let profiles = [];
+  let groups = [];
+  let intakes = [];
+
+  if (sb) {
+    try {
+      const [pRes, gRes, iRes] = await Promise.all([
+        sb.from('profiles').select('id, role, name, email, is_active, created_at'),
+        sb.from('groups').select('id, group_number, project_title, supervisor_id, supervisor_name, status, topic_status, mark, created_at'),
+        sb.from('intakes').select('id, name, year, status, created_at')
+      ]);
+      if (pRes.data) profiles = pRes.data;
+      if (gRes.data) groups = gRes.data;
+      if (iRes.data) intakes = iRes.data;
+    } catch(err) {
+      console.warn('Dashboard fetch warning:', err);
+    }
+  }
+
+  // Calculate numbers
+  const totalUsers = profiles.length;
+  const studentCount = profiles.filter(p => p.role === 'student').length;
+  const projectCount = groups.length;
+  const supervisorCount = profiles.filter(p => p.role === 'supervisor' || p.role === 'coordinator').length;
+
+  const statCards = document.querySelectorAll('.card.stat');
+  if (statCards[0]) {
+    statCards[0].querySelector('.value').textContent = totalUsers;
+    statCards[0].querySelector('.sub').textContent = 'Total registered accounts';
+  }
+  if (statCards[1]) {
+    statCards[1].querySelector('.value').textContent = studentCount;
+    statCards[1].querySelector('.sub').textContent = 'Student accounts';
+  }
+  if (statCards[2]) {
+    statCards[2].querySelector('.value').textContent = projectCount;
+    statCards[2].querySelector('.label').textContent = 'Active Projects';
+    statCards[2].querySelector('.sub').textContent = 'Formed project groups';
+  }
+  if (statCards[3]) {
+    statCards[3].querySelector('.value').textContent = supervisorCount;
+    statCards[3].querySelector('.label').textContent = 'Supervisors';
+    statCards[3].querySelector('.sub').textContent = 'Assigned academic staff';
+  }
+
+  // KPI Bars
+  const approvedCount = groups.filter(g => g.topic_status === 'APPROVED').length;
+  const assignedCount = groups.filter(g => g.supervisor_id || g.supervisor_name).length;
+  const completeCount = groups.filter(g => g.status === 'COMPLETE').length;
+
+  const approvedPct = projectCount > 0 ? Math.round((approvedCount / projectCount) * 100) : 0;
+  const assignedPct = projectCount > 0 ? Math.round((assignedCount / projectCount) * 100) : 0;
+  const completePct = projectCount > 0 ? Math.round((completeCount / projectCount) * 100) : 0;
+
+  const kpiRows = document.querySelectorAll('.kpi-row');
+  const progBars = document.querySelectorAll('.progress span');
+  if (kpiRows[0]) kpiRows[0].querySelector('strong').textContent = (studentCount > 0 ? '100%' : '0%');
+  if (progBars[0]) progBars[0].style.width = (studentCount > 0 ? '100%' : '0%');
+  if (kpiRows[1]) kpiRows[1].querySelector('strong').textContent = approvedPct + '%';
+  if (progBars[1]) progBars[1].style.width = approvedPct + '%';
+  if (kpiRows[2]) kpiRows[2].querySelector('strong').textContent = assignedPct + '%';
+  if (progBars[2]) progBars[2].style.width = assignedPct + '%';
+  if (kpiRows[3]) kpiRows[3].querySelector('strong').textContent = completePct + '%';
+  if (progBars[3]) progBars[3].style.width = completePct + '%';
+
+  // Registration Status Mini Items
+  const pendingCount = groups.filter(g => g.topic_status === 'SUBMITTED' || g.topic_status === 'PENDING').length;
+  const rejectedCount = groups.filter(g => g.topic_status === 'REJECTED').length;
+  const pendingPct = projectCount > 0 ? Math.round((pendingCount / projectCount) * 100) : 0;
+  const rejectedPct = projectCount > 0 ? Math.round((rejectedCount / projectCount) * 100) : 0;
+
+  const miniItems = document.querySelectorAll('.mini-item');
+  if (miniItems[0]) {
+    miniItems[0].querySelector('strong').textContent = approvedCount;
+    const s = miniItems[0].querySelector('.status');
+    if (s) s.textContent = approvedPct + '%';
+  }
+  if (miniItems[1]) {
+    miniItems[1].querySelector('strong').textContent = pendingCount;
+    const s = miniItems[1].querySelector('.status');
+    if (s) s.textContent = pendingPct + '%';
+  }
+  if (miniItems[2]) {
+    miniItems[2].querySelector('strong').textContent = rejectedCount;
+    const s = miniItems[2].querySelector('.status');
+    if (s) s.textContent = rejectedPct + '%';
+  }
+
+  // Recent Activity Feed
+  const act = document.querySelector('.card-body.activity');
+  if (act) {
+    const items = [];
+    if (intakes.length) {
+      items.push(`<div><strong>${intakes[0].name || intakes[0].year}</strong> cycle active</div>`);
+    }
+    groups.slice(0, 3).forEach(g => {
+      items.push(`<div>Project <strong>${g.project_title || g.group_number}</strong> &middot; <span style="color:#2563eb">${g.topic_status || 'Submitted'}</span></div>`);
+    });
+    profiles.slice(0, 3).forEach(p => {
+      items.push(`<div>User <strong>${p.name}</strong> registered (${p.role})</div>`);
+    });
+    act.innerHTML = items.length 
+      ? items.map(html => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">${html}</div>`).join('')
+      : '<p style="color:var(--muted);font-size:12px;">No activity logged yet.</p>';
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadDashboardStats);
+} else {
+  loadDashboardStats();
+}
 </script>
 </body>
 </html>

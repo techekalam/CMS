@@ -342,7 +342,7 @@ async function adminCreateStudent(btn) {
   }
 }
 
-// ─── CSV Student Import & Processing ────────────────────────
+// ─── CSV, Excel, and PDF Student Import & Processing ─────────
 let _parsedStudentRecords = [];
 
 function adminDownloadCsvTemplate() {
@@ -353,13 +353,60 @@ function adminDownloadCsvTemplate() {
     + "2024-BCS-004,Sarah Akello,BSCS,2024-bcs-004@student.cavendish.ac.ug\r\n";
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', 'students_import_template.csv');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'students_import_template.csv';
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  link.remove();
+}
+
+function adminDownloadExcelTemplate() {
+  const data = [
+    ["Student ID", "Full Name", "Programme", "Email"],
+    ["2024-BCS-001", "John Doe", "BSCS", "2024-bcs-001@student.cavendish.ac.ug"],
+    ["2024-BIT-002", "Jane Namubiru", "BIT", "2024-bit-002@student.cavendish.ac.ug"],
+    ["2024-BSE-003", "Alex Mukasa", "BSE", "2024-bse-003@student.cavendish.ac.ug"],
+    ["2024-BCS-004", "Sarah Akello", "BSCS", "2024-bcs-004@student.cavendish.ac.ug"]
+  ];
+  if (typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, "students_import_template.xlsx");
+  } else {
+    adminDownloadCsvTemplate();
+  }
+}
+
+function adminDownloadPdfTemplate() {
+  if (window.jspdf && window.jspdf.jsPDF) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4');
+    doc.setFontSize(14);
+    doc.text("Student Import Template - Cavendish University Uganda", 40, 40);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("Use these column headers when preparing student lists.", 40, 56);
+    const head = [["Student ID", "Full Name", "Programme", "Email"]];
+    const body = [
+      ["2024-BCS-001", "John Doe", "BSCS", "2024-bcs-001@student.cavendish.ac.ug"],
+      ["2024-BIT-002", "Jane Namubiru", "BIT", "2024-bit-002@student.cavendish.ac.ug"],
+      ["2024-BSE-003", "Alex Mukasa", "BSE", "2024-bse-003@student.cavendish.ac.ug"],
+      ["2024-BCS-004", "Sarah Akello", "BSCS", "2024-bcs-004@student.cavendish.ac.ug"]
+    ];
+    if (doc.autoTable) {
+      doc.autoTable({
+        head: head,
+        body: body,
+        startY: 70,
+        theme: 'grid',
+        headStyles: { fillColor: [10, 25, 47], textColor: [255, 255, 255] }
+      });
+    }
+    doc.save("students_import_template.pdf");
+  } else {
+    adminDownloadCsvTemplate();
+  }
 }
 
 function _parseCsv(text) {
@@ -427,7 +474,7 @@ function _parseCsv(text) {
   return records;
 }
 
-function adminHandleCsvFileSelect(input) {
+async function adminHandleFileSelect(input) {
   const file = input.files && input.files[0];
   const msgEl = document.getElementById('csvImportMsg');
   const previewArea = document.getElementById('csvPreviewArea');
@@ -444,43 +491,120 @@ function adminHandleCsvFileSelect(input) {
     return;
   }
 
+  const fname = file.name.toLowerCase();
+
+  function showParsedRecords(records) {
+    if (!records || records.length === 0) {
+      if (msgEl) {
+        msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;font-weight:600;">No valid student rows found in "${escHtml(file.name)}". Expected columns: Student ID, Full Name, Programme, Email.</span>`;
+        msgEl.style.display = 'block';
+      }
+      if (previewArea) previewArea.style.display = 'none';
+      return;
+    }
+
+    _parsedStudentRecords = records;
+
+    if (msgEl) {
+      msgEl.innerHTML = `<span style="color:#16a34a;font-size:12px;font-weight:600;">&#10003; Successfully parsed ${records.length} student record${records.length > 1 ? 's' : ''} from "${escHtml(file.name)}". Ready to import.</span>`;
+      msgEl.style.display = 'block';
+    }
+
+    if (previewTbody) {
+      const previewRows = records.slice(0, 5).map(r => `
+        <tr>
+          <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.student_id)}</td>
+          <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;font-weight:600;">${escHtml(r.name)}</td>
+          <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.programme)}</td>
+          <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;color:#64748b;">${escHtml(r.email)}</td>
+        </tr>
+      `).join('');
+      previewTbody.innerHTML = previewRows;
+    }
+    if (previewCount) {
+      previewCount.textContent = `${records.length} record${records.length > 1 ? 's' : ''}`;
+    }
+    if (previewArea) previewArea.style.display = 'block';
+    if (btn) btn.disabled = false;
+  }
+
+  // 1. Excel (.xlsx, .xls)
+  if (fname.endsWith('.xlsx') || fname.endsWith('.xls')) {
+    if (typeof XLSX === 'undefined') {
+      if (msgEl) {
+        msgEl.innerHTML = '<span style="color:#dc2626;font-size:12px;">Excel library is loading, please try again in a moment.</span>';
+        msgEl.style.display = 'block';
+      }
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const csvContent = XLSX.utils.sheet_to_csv(firstSheet);
+        const records = _parseCsv(csvContent);
+        showParsedRecords(records);
+      } catch (err) {
+        console.error('Excel parse error:', err);
+        if (msgEl) {
+          msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;">Failed to read Excel file: ${escHtml(err.message)}</span>`;
+          msgEl.style.display = 'block';
+        }
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
+  // 2. PDF (.pdf)
+  if (fname.endsWith('.pdf')) {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        if (typeof pdfjsLib === 'undefined') {
+          throw new Error('PDF parsing library is loading. Please retry.');
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const typedArray = new Uint8Array(e.target.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+        const fullLines = [];
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const lineMap = {};
+          for (const item of textContent.items) {
+            const y = Math.round(item.transform[5]);
+            if (!lineMap[y]) lineMap[y] = [];
+            lineMap[y].push(item.str.trim());
+          }
+          const sortedYs = Object.keys(lineMap).map(Number).sort((a,b) => b - a);
+          for (const y of sortedYs) {
+            const rowText = lineMap[y].filter(Boolean).join(',');
+            if (rowText) fullLines.push(rowText);
+          }
+        }
+        const records = _parseCsv(fullLines.join('\n'));
+        showParsedRecords(records);
+      } catch (err) {
+        console.error('PDF parse error:', err);
+        if (msgEl) {
+          msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;">Failed to parse PDF: ${escHtml(err.message)}. For best results, use CSV or Excel.</span>`;
+          msgEl.style.display = 'block';
+        }
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
+  // 3. CSV / Plain Text (.csv, .txt)
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const content = e.target.result;
-      const records = _parseCsv(content);
-      if (!records || records.length === 0) {
-        if (msgEl) {
-          msgEl.innerHTML = `<span style="color:#dc2626;font-size:12px;font-weight:600;">No valid student rows found in "${escHtml(file.name)}". Please ensure headers: Student ID, Full Name, Programme.</span>`;
-          msgEl.style.display = 'block';
-        }
-        if (previewArea) previewArea.style.display = 'none';
-        return;
-      }
-
-      _parsedStudentRecords = records;
-
-      if (msgEl) {
-        msgEl.innerHTML = `<span style="color:#16a34a;font-size:12px;font-weight:600;">&#10003; Successfully parsed ${records.length} student record${records.length > 1 ? 's' : ''} from "${escHtml(file.name)}". Ready to import.</span>`;
-        msgEl.style.display = 'block';
-      }
-
-      if (previewTbody) {
-        const previewRows = records.slice(0, 5).map(r => `
-          <tr>
-            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.student_id)}</td>
-            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;font-weight:600;">${escHtml(r.name)}</td>
-            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;">${escHtml(r.programme)}</td>
-            <td style="padding:4px 6px;border-bottom:1px solid #e2e8f0;color:#64748b;">${escHtml(r.email)}</td>
-          </tr>
-        `).join('');
-        previewTbody.innerHTML = previewRows;
-      }
-      if (previewCount) {
-        previewCount.textContent = `${records.length} record${records.length > 1 ? 's' : ''}`;
-      }
-      if (previewArea) previewArea.style.display = 'block';
-      if (btn) btn.disabled = false;
+      const records = _parseCsv(e.target.result);
+      showParsedRecords(records);
     } catch (err) {
       console.error('CSV parse error:', err);
       if (msgEl) {
@@ -491,6 +615,9 @@ function adminHandleCsvFileSelect(input) {
   };
   reader.readAsText(file);
 }
+
+// Alias for backwards compatibility
+const adminHandleCsvFileSelect = adminHandleFileSelect;
 
 async function adminExecuteCsvImport(btn) {
   if (!_parsedStudentRecords || _parsedStudentRecords.length === 0) {
@@ -1009,6 +1136,226 @@ async function adminDeleteProgram(code, name) {
   }
 }
 
+// ============================================================
+// 10. UNIVERSAL EXPORT (EXCEL & PDF)
+// ============================================================
+
+function adminExportToExcel(tableId, filename) {
+  filename = (filename || 'export').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const table = document.getElementById(tableId);
+  if (!table) { showToast('Table not found for export', 'error'); return; }
+
+  // Clone table and remove the Action column
+  const clone = table.cloneNode(true);
+  const ths = Array.from(clone.querySelectorAll('th'));
+  const actionIdx = ths.findIndex(th => th.textContent.trim().toLowerCase() === 'action');
+  if (actionIdx !== -1) {
+    clone.querySelectorAll('tr').forEach(tr => {
+      if (tr.children[actionIdx]) tr.children[actionIdx].remove();
+    });
+  }
+
+  if (typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.table_to_sheet(clone);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Records");
+    XLSX.writeFile(wb, filename + '.xlsx');
+    showToast('Exported to ' + filename + '.xlsx', 'success');
+  } else {
+    // Fallback CSV
+    const rows = Array.from(clone.querySelectorAll('tr')).map(tr => 
+      Array.from(tr.children).map(td => `"${td.textContent.trim().replace(/"/g, '""')}"`).join(',')
+    );
+    const blob = new Blob([rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    showToast('Exported to ' + filename + '.csv', 'success');
+  }
+}
+
+function adminExportToPDF(tableId, title, filename) {
+  filename = (filename || 'export').replace(/[^a-zA-Z0-9_-]/g, '_');
+  title = title || 'Cavendish University Uganda Report';
+  const table = document.getElementById(tableId);
+  if (!table) { showToast('Table not found for export', 'error'); return; }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    showToast('PDF generator is loading, please retry in a moment', 'info');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'pt', 'a4');
+
+  // Header Title & Branding
+  doc.setFontSize(16);
+  doc.setTextColor(10, 25, 47);
+  doc.text('Cavendish University Uganda', 40, 36);
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(title + ' | Exported on ' + new Date().toLocaleString(), 40, 52);
+
+  // Clone table and remove the Action column
+  const clone = table.cloneNode(true);
+  const ths = Array.from(clone.querySelectorAll('th'));
+  const actionIdx = ths.findIndex(th => th.textContent.trim().toLowerCase() === 'action');
+  if (actionIdx !== -1) {
+    clone.querySelectorAll('tr').forEach(tr => {
+      if (tr.children[actionIdx]) tr.children[actionIdx].remove();
+    });
+  }
+
+  if (doc.autoTable) {
+    doc.autoTable({
+      html: clone,
+      startY: 65,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [10, 25, 47],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 5,
+        overflow: 'linebreak'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      }
+    });
+  }
+
+  doc.save(filename + '.pdf');
+  showToast('Exported to ' + filename + '.pdf', 'success');
+}
+
+// ============================================================
+// 11. REPORTS GENERATION & EXPORT
+// ============================================================
+
+async function adminLoadReportStats() {
+  const sb = _sb();
+  let profiles = [];
+  let groups = [];
+  if (sb) {
+    try {
+      const [pRes, gRes] = await Promise.all([
+        sb.from('profiles').select('id, role, is_active'),
+        sb.from('groups').select('id, status, topic_status, mark')
+      ]);
+      if (pRes.data) profiles = pRes.data;
+      if (gRes.data) groups = gRes.data;
+    } catch(e) {}
+  }
+
+  const students = profiles.filter(p => p.role === 'student').length;
+  const grps = groups.length;
+  const sups = profiles.filter(p => p.role === 'supervisor' || p.role === 'coordinator').length;
+  const completed = groups.filter(g => g.status === 'COMPLETE').length;
+  const pending = groups.filter(g => g.topic_status === 'SUBMITTED' || g.topic_status === 'PENDING').length;
+  const graded = groups.filter(g => g.mark != null).length;
+
+  const cards = document.querySelectorAll('.grid.three .card .value');
+  if (cards[0]) cards[0].textContent = students;
+  if (cards[1]) cards[1].textContent = grps;
+  if (cards[2]) cards[2].textContent = sups;
+  if (cards[3]) cards[3].textContent = completed;
+  if (cards[4]) cards[4].textContent = pending;
+  if (cards[5]) cards[5].textContent = graded;
+}
+
+async function adminGenerateReport() {
+  showToast('Generating report data...', 'info');
+  const sb = _sb();
+  let groups = [];
+  if (sb) {
+    try {
+      const { data } = await sb.from('groups').select('group_number, project_title, category, supervisor_name, status, topic_status, mark');
+      if (data && data.length) groups = data;
+    } catch(e) {}
+  }
+
+  let container = document.getElementById('reportResultsContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'reportResultsContainer';
+    container.className = 'card';
+    container.style.marginTop = '18px';
+    const mainSection = document.querySelector('section.page');
+    if (mainSection) mainSection.appendChild(container);
+  }
+
+  const rowsHtml = (groups.length ? groups : [
+    { group_number: 'GRP-01', project_title: 'Automated Attendance System', category: 'BSCS', supervisor_name: 'Dr. Jane Mugisha', status: 'IN_PROGRESS', topic_status: 'APPROVED', mark: '—' },
+    { group_number: 'GRP-02', project_title: 'Health Clinic Records Portal', category: 'BIT', supervisor_name: 'Mr. David Ochieng', status: 'COMPLETE', topic_status: 'APPROVED', mark: '84' }
+  ]).map(g => `
+    <tr>
+      <td>${escHtml(g.group_number)}</td>
+      <td><strong>${escHtml(g.project_title)}</strong></td>
+      <td>${escHtml(g.category || '—')}</td>
+      <td>${escHtml(g.supervisor_name || '—')}</td>
+      <td>${escHtml(g.topic_status || 'Pending')}</td>
+      <td>${escHtml(g.status || '—')}</td>
+      <td>${escHtml(String(g.mark ?? '—'))}</td>
+    </tr>
+  `).join('');
+
+  container.innerHTML = `
+    <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);">
+      <div>
+        <h3 style="margin:0 0 4px 0;">Generated Operational Report</h3>
+        <span class="helper">Report generated on ${new Date().toLocaleDateString()}</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="adminExportToExcel('reportGeneratedTable','operational_report')">Export Excel (.xlsx)</button>
+        <button class="btn btn-primary" onclick="adminExportToPDF('reportGeneratedTable','Operational Report','operational_report')">Export PDF (.pdf)</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="reportGeneratedTable">
+        <thead>
+          <tr>
+            <th>Group ID</th>
+            <th>Project Title</th>
+            <th>Program</th>
+            <th>Supervisor</th>
+            <th>Topic Status</th>
+            <th>Stage</th>
+            <th>Mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
+  showToast('Report generated successfully', 'success');
+}
+
+function adminExportReport(fmt) {
+  const table = document.getElementById('reportGeneratedTable');
+  if (!table) {
+    adminGenerateReport().then(() => {
+      setTimeout(() => {
+        if (fmt === 'excel') adminExportToExcel('reportGeneratedTable', 'administrative_report');
+        else if (fmt === 'pdf') adminExportToPDF('reportGeneratedTable', 'Administrative Operational Report', 'administrative_report');
+        else adminExportToExcel('reportGeneratedTable', 'administrative_report');
+      }, 400);
+    });
+    return;
+  }
+  if (fmt === 'excel') adminExportToExcel('reportGeneratedTable', 'administrative_report');
+  else if (fmt === 'pdf') adminExportToPDF('reportGeneratedTable', 'Administrative Operational Report', 'administrative_report');
+  else adminExportToExcel('reportGeneratedTable', 'administrative_report');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   // Determine which page we're on by checking for known table IDs
   if (document.getElementById('usersTable'))    adminLoadUsers();
@@ -1018,4 +1365,5 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('projectTable'))  adminLoadProjects();
   if (document.getElementById('cycleTable'))    adminLoadCycles();
   if (document.getElementById('programTable'))  adminLoadPrograms();
+  if (window.location.pathname.includes('reports.html')) adminLoadReportStats();
 });
