@@ -498,6 +498,8 @@ function navigate(view){
   const overlayEl = document.getElementById('overlay');
   if(overlayEl) overlayEl.classList.remove('show');
   window.scrollTo(0,0);
+  // Load notifications when navigating to the notifications view
+  if (view === 'notifications') loadNotifications();
 }
 function toggleSide(){
   const sideEl = document.getElementById('side');
@@ -746,6 +748,8 @@ async function loadData(){
   renderIntakes(); renderGroups(); renderDefenses(); renderMarks(); renderLegacy(); renderCerts();
   if(STUDENT_ID){ document.body.classList.add('student-mode'); renderMyCerts(); navigate('mycerts'); }
   else navigate('dashboard');
+  // Load notifications badge in background
+  loadNotifications();
 }
 
 // Initialize on DOM load
@@ -753,6 +757,149 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', loadData);
 } else {
   loadData();
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+let _allNotifs = [];
+let _notifFilter = 'all';
+let _notifSub = null;
+
+async function loadNotifications() {
+  if (!sb) { renderNotifList([]); return; }
+  try {
+    // Load notifications addressed to this coordinator OR broadcast (no recipient / recipient matches coordinator email)
+    const coordEmail = localStorage.getItem('cms_user_email') || '';
+    let query = sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(100);
+    const { data, error } = await query;
+    if (error) throw error;
+    // Filter: show notifications for this coordinator, or ones sent to any coordinator, or general system ones
+    _allNotifs = (data || []).filter(n =>
+      !n.recipient_email ||
+      (coordEmail && n.recipient_email === coordEmail) ||
+      n.recipient_email === 'coordinator'
+    );
+  } catch(e) {
+    // Fallback: show all notifications if can't filter
+    try {
+      const { data } = await sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(100);
+      _allNotifs = data || [];
+    } catch(_) { _allNotifs = []; }
+  }
+  updateNotifBadge();
+  renderNotifList(_allNotifs);
+  subscribeNotifications();
+}
+
+function subscribeNotifications() {
+  if (!sb || _notifSub) return;
+  try {
+    _notifSub = sb.channel('coordinator-notifs')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
+        const n = payload.new;
+        const coordEmail = localStorage.getItem('cms_user_email') || '';
+        if (!n.recipient_email || (coordEmail && n.recipient_email === coordEmail) || n.recipient_email === 'coordinator') {
+          _allNotifs.unshift(n);
+          updateNotifBadge();
+          renderNotifList(_allNotifs);
+          // Flash the bell
+          const bell = document.getElementById('notifBell');
+          if (bell) { bell.style.background = 'rgba(239,68,68,0.4)'; setTimeout(() => { bell.style.background = ''; }, 1200); }
+        }
+      })
+      .subscribe();
+  } catch(e) {}
+}
+
+function updateNotifBadge() {
+  const unread = _allNotifs.filter(n => !n.read).length;
+  const badge = document.getElementById('notifBadge');
+  const sideBadge = document.getElementById('notifSideBadge');
+  const cardNotifs = document.getElementById('cardNotifs');
+  if (badge) { badge.textContent = unread > 99 ? '99+' : unread; badge.style.display = unread ? 'flex' : 'none'; }
+  if (sideBadge) { sideBadge.textContent = unread > 99 ? '99+' : unread; sideBadge.style.display = unread ? 'inline' : 'none'; }
+  if (cardNotifs) cardNotifs.textContent = unread;
+}
+
+function notifFilter(type) {
+  _notifFilter = type;
+  ['all','unread','success','warning','info'].forEach(t => {
+    const el = document.getElementById('nf' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) { el.className = t === type ? 'btn-primary' : 'btn-ghost'; }
+  });
+  renderNotifList(_allNotifs);
+}
+
+function renderNotifList(notifs) {
+  const el = document.getElementById('notifList');
+  const countEl = document.getElementById('notifCount');
+  if (!el) return;
+
+  let list = notifs;
+  if (_notifFilter === 'unread') list = notifs.filter(n => !n.read);
+  else if (_notifFilter !== 'all') list = notifs.filter(n => n.type === _notifFilter);
+
+  const unread = notifs.filter(n => !n.read).length;
+  if (countEl) countEl.textContent = `${list.length} notification${list.length !== 1 ? 's' : ''} · ${unread} unread`;
+
+  if (!list.length) {
+    el.innerHTML = `<div class="notif-empty">🔔<br><br>No notifications${_notifFilter !== 'all' ? ' in this category' : ''}.<br><span style="font-size:12px">They'll appear here automatically.</span></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(n => {
+    const type = n.type || 'info';
+    const ts = n.created_at ? fmtDateTime(new Date(n.created_at).toISOString()) : '';
+    const unreadClass = n.read ? '' : ' unread';
+    return `<div class="notif-item${unreadClass}" onclick="notifMarkRead('${n.id}', this)">
+      <div class="notif-dot ${type}"></div>
+      <div class="notif-body">
+        <div class="notif-title">${escN(n.title || 'Notification')}</div>
+        <div class="notif-msg">${escN(n.message || '')}</div>
+      </div>
+      <div class="notif-time">${ts}</div>
+    </div>`;
+  }).join('');
+}
+
+function escN(str) {
+  if (!str) return '';
+  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+
+async function notifMarkRead(id, el) {
+  const n = _allNotifs.find(x => String(x.id) === String(id));
+  if (n && !n.read) {
+    n.read = true;
+    if (el) el.classList.remove('unread');
+    updateNotifBadge();
+    if (sb) { try { await sb.from('notifications').update({ read: true }).eq('id', id); } catch(e) {} }
+  }
+}
+
+async function notifMarkAllRead() {
+  const unreadIds = _allNotifs.filter(n => !n.read).map(n => n.id);
+  _allNotifs.forEach(n => { n.read = true; });
+  updateNotifBadge();
+  renderNotifList(_allNotifs);
+  if (sb && unreadIds.length) {
+    try { await sb.from('notifications').update({ read: true }).in('id', unreadIds); } catch(e) {}
+  }
+  banner('banner-notifications', 'All notifications marked as read.', 'ok');
+}
+
+async function notifClearAll() {
+  if (!confirm('Clear all notifications? This cannot be undone.')) return;
+  const ids = _allNotifs.map(n => n.id);
+  _allNotifs = [];
+  updateNotifBadge();
+  renderNotifList([]);
+  if (sb && ids.length) {
+    try { await sb.from('notifications').delete().in('id', ids); } catch(e) {}
+  }
+  banner('banner-notifications', 'All notifications cleared.', 'ok');
 }
 
 
