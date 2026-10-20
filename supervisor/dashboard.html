@@ -259,6 +259,7 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
     <div class="item" data-view="dashboard" onclick="navigate('dashboard')">Dashboard</div>
     <div class="item" data-view="students" onclick="navigate('students')">Assigned Students</div>
     <div class="item" data-view="documents" onclick="navigate('documents')">Documents</div>
+    <div class="item" data-view="defenses" onclick="navigate('defenses')">Pending Defenses</div>
     <div class="item" data-view="chat" onclick="navigate('chat')">Group Chat</div>
     <a href="../login.html" class="item" style="display:block;margin-top:28px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;color:#fca5a5;text-decoration:none;">Logout</a>
   </div>
@@ -279,7 +280,7 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
           <p>View, search, and review submitted documents.</p>
           <div class="count" id="cardDocsCount">0</div>
         </div>
-        <div class="dash-card" onclick="navigate('students')">
+        <div class="dash-card" onclick="navigate('defenses')">
           <h3>Pending Defenses</h3>
           <p>Students awaiting scheduling or attendance sign-off.</p>
           <div class="count" id="cardDefenseCount">0</div>
@@ -332,6 +333,28 @@ button{cursor:pointer;border:none;border-radius:8px;font-size:12px;font-weight:6
         <table>
           <thead><tr><th>Student</th><th>Document</th><th>Type</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
           <tbody id="docRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PENDING DEFENSES VIEW -->
+    <div class="view" id="view-defenses">
+      <div class="header"><h2>Pending Defenses</h2></div>
+      <div id="banner-defenses"></div>
+      <div class="card filters">
+        <input id="defenseSearch" placeholder="Search by student name, registration number, or group...">
+        <select id="defenseStatusFilter">
+          <option value="">All Defense Statuses</option>
+          <option value="REQUESTED">Requested (Needs Scheduling)</option>
+          <option value="SCHEDULED">Scheduled (Awaiting Attendance)</option>
+          <option value="PENDING_COORDINATOR_REVIEW">Pending Coordinator Review</option>
+          <option value="APPROVED">Approved</option>
+        </select>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Student</th><th>Group</th><th>Requested / Scheduled Date</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+          <tbody id="defenseRows"></tbody>
         </table>
       </div>
     </div>
@@ -673,7 +696,66 @@ function openDocument(id){
   }
 }
 
+
+function renderDefenses(){
+  const q = (document.getElementById('defenseSearch')?.value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('defenseStatusFilter')?.value || '';
+  
+  const list = students.filter(s => {
+    const hasDefense = s.defenseStatus && s.defenseStatus !== 'NONE';
+    if (!hasDefense && !statusFilter) return false;
+    const matchQuery = !q || (s.name && s.name.toLowerCase().includes(q)) || (s.reg && s.reg.toLowerCase().includes(q)) || (s.group && s.group.toLowerCase().includes(q));
+    const matchStatus = !statusFilter || s.defenseStatus === statusFilter;
+    return matchQuery && matchStatus;
+  });
+
+  const tbody = document.getElementById('defenseRows');
+  if(!tbody) return;
+
+  tbody.innerHTML = list.map(s => {
+    let statusBadge = '';
+    let actionBtn = '';
+
+    if (s.defenseStatus === 'REQUESTED') {
+      statusBadge = badge('Requested (Needs Scheduling)', 'warn');
+      actionBtn = `<button class="btn-primary" onclick="openSchedule('${s.id}')">Schedule Defense</button>`;
+    } else if (s.defenseStatus === 'SCHEDULED') {
+      statusBadge = badge('Scheduled', 'ok');
+      actionBtn = `<button class="btn-primary" onclick="openAttendance('${s.id}')">Attach Attendance</button>`;
+    } else if (s.defenseStatus === 'PENDING_COORDINATOR_REVIEW') {
+      statusBadge = `<span class="badge ok">Pending Coordinator</span>`;
+      actionBtn = `<span style="font-size:12px;color:var(--muted)">Awaiting Coordinator</span>`;
+    } else if (s.defenseStatus === 'APPROVED') {
+      statusBadge = badge('Approved ✅', 'ok');
+      actionBtn = `<span style="font-size:12px;color:var(--ok);font-weight:600;">Completed</span>`;
+    } else {
+      statusBadge = badge(s.defenseStatus, 'warn');
+      actionBtn = `<button class="btn-primary" onclick="openSchedule('${s.id}')">Schedule</button>`;
+    }
+
+    const dateDisplay = s.defenseDate ? (s.defenseDate + (s.defenseTime ? ' (' + s.defenseTime + ')' : '')) : (s.defenseStatus === 'REQUESTED' ? 'Requested' : '—');
+
+    return `<tr>
+      <td><b>${escHtml(s.name)}</b><br><span style="color:var(--muted);font-size:11px">${escHtml(s.reg)}</span></td>
+      <td>${escHtml(s.group)}</td>
+      <td>${escHtml(dateDisplay)}</td>
+      <td>${statusBadge}</td>
+      <td style="text-align:right">${actionBtn}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">No defenses match the filter.</td></tr>';
+
+  const cardDefenseCount = document.getElementById('cardDefenseCount');
+  if (cardDefenseCount) {
+    cardDefenseCount.textContent = students.filter(s => ['REQUESTED', 'SCHEDULED'].includes(s.defenseStatus)).length;
+  }
+}
+['defenseSearch', 'defenseStatusFilter'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', renderDefenses);
+});
+
 function renderDocs(){
+
   const q = document.getElementById('docSearch').value.toLowerCase();
   const type = document.getElementById('docTypeFilter').value;
   const status = document.getElementById('docStatusFilter').value;
@@ -835,7 +917,7 @@ async function submitSchedule(id){
       } catch(err) { console.warn(err); }
     }
   }
-  closeModal(); banner('banner','Defense scheduled and group notified.', 'ok'); render();
+  closeModal(); banner('banner','Defense scheduled and group notified.', 'ok'); banner('banner-defenses','Defense scheduled and group notified.', 'ok'); render(); renderDefenses();
 }
 function openAttendance(id){
   showModal(`<h3>Attach Attendance & Discussion</h3>
@@ -858,7 +940,7 @@ async function submitAttendance(id){
       } catch(err) { console.warn(err); }
     }
   }
-  closeModal(); banner('banner','Attendance submitted for coordinator review.', 'ok'); render();
+  closeModal(); banner('banner','Attendance submitted for coordinator review.', 'ok'); banner('banner-defenses','Attendance submitted for coordinator review.', 'ok'); render(); renderDefenses();
 }
 function openGrade(id){
   showModal(`<h3>Assess & Grade</h3>
@@ -945,6 +1027,9 @@ async function loadData(){
           groupTopicStatus: r.groups?.topic_status || 'SUBMITTED',
           completion: st.completion_percentage !== undefined ? st.completion_percentage : (gradedSet.has(r.student_id) ? 100 : 0),
           defenseStatus: st.defense_status || 'NONE',
+          defenseDate: st.defense_date || '',
+          defenseTime: st.defense_time || '',
+          meetingUrl: st.defense_meeting_url || '',
           graded: gradedSet.has(r.student_id)
         };
       });
@@ -1047,7 +1132,7 @@ async function loadData(){
     console.warn('Supabase fetch notice:', e);
     banner('banner-dash','Could not reach Supabase. Check SUPABASE_URL/ANON_KEY and try again.', 'err');
   }
-  render(); renderDocs(); populateChatGroups(); navigate('dashboard');
+  render(); renderDocs(); renderDefenses(); populateChatGroups(); navigate('dashboard');
 }
 loadData();
 </script>

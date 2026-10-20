@@ -1,3 +1,200 @@
+
+// ── Student Oral Defense Scheduling ──
+let _currentDefenseContext = null;
+
+async function loadStudentDefenseStatus(sb, studentId, groupId, groupInfo) {
+    const badgeEl = document.getElementById('defenseStatusBadge');
+    const detailsBox = document.getElementById('defenseDetailsBox');
+    const actionArea = document.getElementById('defenseActionArea');
+    const btnOpen = document.getElementById('btnOpenDefenseModal');
+
+    if (!badgeEl || !detailsBox) return;
+
+    _currentDefenseContext = { sb, studentId, groupId, groupInfo };
+
+    try {
+        let stStatus = null;
+        if (studentId) {
+            const { data } = await sb.from('student_status').select('*').eq('student_id', studentId).maybeSingle();
+            stStatus = data;
+        }
+
+        const status = stStatus?.defense_status || 'NONE';
+        const dDate = stStatus?.defense_date;
+        const dTime = stStatus?.defense_time;
+        const meetUrl = stStatus?.defense_meeting_url;
+        const supName = groupInfo?.group?.supervisor_name || 'Assigned Supervisor';
+
+        if (status === 'SCHEDULED') {
+            badgeEl.textContent = '✅ Defense Scheduled';
+            badgeEl.style.background = '#dcfce7';
+            badgeEl.style.color = '#15803d';
+
+            detailsBox.style.display = 'block';
+            detailsBox.innerHTML = `
+                <div style="font-size:13.5px;color:#1e293b;line-height:1.6;">
+                    <p style="margin:0 0 6px;"><strong>Scheduled Date:</strong> ${dDate || 'TBD'} ${dTime ? 'at ' + dTime : ''}</p>
+                    <p style="margin:0 0 6px;"><strong>Supervisor:</strong> ${escHtml(supName)}</p>
+                    ${meetUrl ? `<p style="margin:0 0 8px;"><strong>Meeting Link:</strong> <a href="${escHtml(meetUrl)}" target="_blank" style="color:#2563eb;font-weight:600;text-decoration:underline;">Join Online Defense Session &rarr;</a></p>` : ''}
+                    <div style="background:#eff6ff;color:#1e40af;padding:8px 12px;border-radius:6px;font-size:12px;margin-top:6px;">
+                        📌 Please ensure your presentation slides and demo are ready 10 minutes prior to your session.
+                    </div>
+                </div>
+            `;
+            if (btnOpen) {
+                btnOpen.textContent = '✏️ Request Reschedule';
+                btnOpen.style.background = '#f1f5f9';
+                btnOpen.style.color = '#334155';
+                btnOpen.style.boxShadow = 'none';
+            }
+        } else if (status === 'REQUESTED') {
+            badgeEl.textContent = '⏳ Defense Requested (Pending Supervisor Confirmation)';
+            badgeEl.style.background = '#fef3c7';
+            badgeEl.style.color = '#b45309';
+
+            detailsBox.style.display = 'block';
+            detailsBox.innerHTML = `
+                <div style="font-size:13.5px;color:#1e293b;line-height:1.6;">
+                    <p style="margin:0 0 6px;"><strong>Proposed Date:</strong> ${dDate || 'TBD'} ${dTime ? 'at ' + dTime : ''}</p>
+                    <p style="margin:0 0 6px;"><strong>Supervisor:</strong> ${escHtml(supName)}</p>
+                    <p style="margin:0;color:#64748b;font-size:12.5px;">Your defense request has been sent to your supervisor. Once confirmed, your meeting details will appear here.</p>
+                </div>
+            `;
+            if (btnOpen) {
+                btnOpen.textContent = '✏️ Update Request';
+            }
+        } else if (status === 'PENDING_COORDINATOR_REVIEW') {
+            badgeEl.textContent = '📋 Defense Completed - Pending Coordinator Review';
+            badgeEl.style.background = '#e0f2fe';
+            badgeEl.style.color = '#0369a1';
+
+            detailsBox.style.display = 'block';
+            detailsBox.innerHTML = `
+                <p style="margin:0;font-size:13px;color:#334155;">Oral defense completed with supervisor. Attendance and evaluation have been submitted for faculty coordinator review.</p>
+            `;
+            if (actionArea) actionArea.style.display = 'none';
+        } else if (status === 'APPROVED') {
+            badgeEl.textContent = '🎉 Defense Approved & Completed';
+            badgeEl.style.background = '#dcfce7';
+            badgeEl.style.color = '#15803d';
+
+            detailsBox.style.display = 'block';
+            detailsBox.innerHTML = `
+                <p style="margin:0;font-size:13px;color:#15803d;font-weight:600;">Oral defense officially approved by coordinator. Check your Assessments page for final graded marks.</p>
+            `;
+            if (actionArea) actionArea.style.display = 'none';
+        } else {
+            badgeEl.textContent = 'Not Scheduled';
+            badgeEl.style.background = '#f1f5f9';
+            badgeEl.style.color = '#64748b';
+            detailsBox.style.display = 'none';
+            if (btnOpen) {
+                btnOpen.textContent = '📅 Schedule / Request Defense';
+                btnOpen.style.background = 'linear-gradient(135deg,#2563eb,#3b82f6)';
+                btnOpen.style.color = '#fff';
+            }
+        }
+    } catch(err) {
+        console.warn('Defense status fetch notice:', err);
+    }
+}
+
+function openStudentDefenseModal() {
+    const modal = document.getElementById('studentDefenseModal');
+    if (!modal) return;
+    const dateInput = document.getElementById('stuDefenseDate');
+    if (dateInput && !dateInput.value) {
+        // Default to tomorrow or next business day
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.value = tomorrow.toISOString().split('T')[0];
+        dateInput.min = new Date().toISOString().split('T')[0];
+    }
+    modal.style.display = 'flex';
+}
+
+function closeStudentDefenseModal() {
+    const modal = document.getElementById('studentDefenseModal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function submitStudentDefense(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitDefense');
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+    try {
+        const date = document.getElementById('stuDefenseDate').value;
+        const time = document.getElementById('stuDefenseTime').value;
+        const link = (document.getElementById('stuDefenseLink')?.value || '').trim();
+        const notes = (document.getElementById('stuDefenseNotes')?.value || '').trim();
+
+        if (!date || !time) {
+            alert('Please select a date and time slot.');
+            if (btn) { btn.disabled = false; btn.textContent = 'Send Request'; }
+            return;
+        }
+
+        const sb = _currentDefenseContext?.sb || _getMainSb();
+        const studentId = _currentDefenseContext?.studentId || localStorage.getItem('cms_student_id') || '';
+        const grp = _currentDefenseContext?.groupInfo?.group;
+        const profile = _currentDefenseContext?.groupInfo?.profile;
+        const studentName = profile?.name || localStorage.getItem('cms_user_name') || studentId;
+        const groupNumber = grp?.group_number || 'Group';
+        const supName = grp?.supervisor_name || 'Supervisor';
+        const supEmail = grp?.supervisor_id || (supName ? supName.toLowerCase().replace(/\s+/g, '.') + '@cavendish.ac.ug' : null);
+
+        // 1. Update student_status table
+        if (studentId) {
+            await sb.from('student_status').upsert({
+                student_id: studentId,
+                group_id: grp?.id || null,
+                defense_status: 'REQUESTED',
+                defense_date: date,
+                defense_time: time
+            });
+        }
+
+        // 2. Insert into defenses table for coordinator/supervisor visibility
+        try {
+            await sb.from('defenses').insert({
+                student_id: studentId,
+                student_name: studentName,
+                group_number: groupNumber,
+                supervisor_name: supName,
+                submitted_date: date,
+                status: 'PENDING',
+                notes: notes ? `Time: ${time} | ${notes} ${link ? '| Link: ' + link : ''}` : `Time: ${time} ${link ? '| Link: ' + link : ''}`
+            });
+        } catch(defErr) {
+            console.warn('Defenses insert notice:', defErr);
+        }
+
+        // 3. Notify supervisor via notifications table
+        try {
+            await sb.from('notifications').insert({
+                recipient_email: supEmail || 'supervisor@cavendish.ac.ug',
+                title: 'Oral Defense Requested',
+                message: `Student ${studentName} (${groupNumber}) requested an oral defense on ${date} (${time}). Notes: ${notes || 'None'}`,
+                type: 'defense',
+                read: false,
+                created_at: new Date().toISOString()
+            });
+        } catch(_) {}
+
+        closeStudentDefenseModal();
+        alert('Your defense request has been submitted to your supervisor!');
+        if (sb && studentId) {
+            loadStudentDefenseStatus(sb, studentId, grp?.id, _currentDefenseContext?.groupInfo);
+        }
+    } catch(err) {
+        console.error('Defense submission error:', err);
+        alert('Failed to submit defense request: ' + (err.message || 'Unknown error'));
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Send Request'; }
+    }
+}
+
 /* =========================================================
    MAIN.JS – Global Interactivity for Capstone Management System
    Handles session persistence, dynamic progress tracker,
@@ -710,6 +907,7 @@ async function initProjectPage() {
             }
             // Load existing uploaded deliverables
             loadStudentDocuments(sb, studentId, currentGroupId);
+            loadStudentDefenseStatus(sb, studentId, currentGroupId, groupInfo);
         } catch(e) { console.warn('Project page fetch notice:', e); }
     }
 
