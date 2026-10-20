@@ -720,13 +720,16 @@ function _setDocApproval(id, approved) {
 }
 async function setDocStatus(id, approved){
   const d = documents.find(x=>x.id===id);
-  d.comments = document.getElementById('docComment').value;
+  const rawComment = (document.getElementById('docComment').value || '').trim();
+  const statusPrefix = approved ? '[APPROVED]' : '[REJECTED]';
+  const finalComment = rawComment ? (statusPrefix + ' ' + rawComment) : statusPrefix;
+  d.comments = finalComment;
   d.reviewed = true;
   d.approved = approved;
   _setDocApproval(id, approved);
   if(sb) {
     try {
-      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString()}).eq('id', id);
+      await sb.from('documents').update({supervisor_comments:finalComment, reviewed_at:new Date().toISOString()}).eq('id', id);
       // Try writing status column (only works if column exists in DB)
       try { await sb.from('documents').update({status: approved ? 'approved' : 'rejected'}).eq('id', id); } catch(_) {}
       const st = students.find(s => s.id === d.studentId || s.name === d.student || s.reg === d.studentId);

@@ -506,7 +506,13 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                     const msg = (n.message || '');
                     // Extracts filename if format is: reviewed "filename":
                     const m = msg.match(/reviewed\s+"([^"]+)"/i);
-                    if (m && m[1]) window._cachedRevisionDocIds.add(m[1]);
+                    if (m && m[1]) {
+                        window._cachedRevisionDocIds.add(m[1]);
+                        window._cachedRevisionDocIds.add(m[1].toLowerCase().trim());
+                    }
+                    if (msg) {
+                        window._cachedRevisionDocIds.add(msg.toLowerCase());
+                    }
                 });
             }
         } catch(_) {}
@@ -566,8 +572,22 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                                 } else if (commentText.includes('[approved]') || commentText.includes('approv')) {
                                     docStatus = 'approved';
                                 } else {
-                                    // If no comments or neutral feedback on reviewed document, check if supervisor requested revision via notifications
-                                    docStatus = 'approved';
+                                    // Check if there is an associated revision request in notifications
+                                    const safeName = (d.file_name || '').trim().toLowerCase();
+                                    let hasRev = false;
+                                    if (window._cachedRevisionDocIds) {
+                                        if (window._cachedRevisionDocIds.has(d.file_name) || window._cachedRevisionDocIds.has(safeName)) {
+                                            hasRev = true;
+                                        } else {
+                                            for (let item of window._cachedRevisionDocIds) {
+                                                if (item && safeName && item.includes(safeName)) {
+                                                    hasRev = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    docStatus = hasRev ? 'rejected' : 'approved';
                                 }
                             }
 
