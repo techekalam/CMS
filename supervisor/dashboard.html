@@ -639,6 +639,40 @@ function render(){
 }
 document.getElementById('search').addEventListener('input', render);
 
+function openDocument(id){
+  const d = documents.find(x=>x.id===id);
+  if(!d || !d.url) { alert('Document not available.'); return; }
+  const url = d.url;
+  if(url.startsWith('data:')){
+    // Convert base64 data URL -> Blob -> object URL (browsers block data: navigation)
+    try {
+      const [meta, b64] = url.split(',');
+      const mime = meta.match(/:(.*?);/)[1];
+      const binary = atob(b64);
+      const u8arr = new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++) u8arr[i]=binary.charCodeAt(i);
+      const blob = new Blob([u8arr], {type: mime});
+      const blobUrl = URL.createObjectURL(blob);
+      // For PDFs open in new tab; for others trigger download
+      if(mime === 'application/pdf'){
+        window.open(blobUrl, '_blank');
+      } else {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = d.file || ('document_' + id);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch(e) {
+      console.error('openDocument blob error:', e);
+      alert('Could not open document. It may be corrupted.');
+    }
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
 function renderDocs(){
   const q = document.getElementById('docSearch').value.toLowerCase();
   const type = document.getElementById('docTypeFilter').value;
@@ -655,7 +689,7 @@ function renderDocs(){
       <td>${d.type.replace('_',' ')}</td>
       <td>${badge(d.reviewed?'Reviewed':'Pending Review', d.reviewed?'ok':'warn')}</td>
       <td style="text-align:right"><div class="actions">
-        <button class="btn-ghost" onclick="window.open('${d.url}','_blank')">Open</button>
+        <button class="btn-ghost" onclick="openDocument('${d.id}')">Open</button>
         <button class="btn-primary" onclick="openDocReview('${d.id}')">Review</button>
       </div></td>
     </tr>`).join('') || `<tr><td colspan="5" style="color:var(--muted)">No documents match.</td></tr>`;

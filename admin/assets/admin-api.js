@@ -149,6 +149,7 @@ async function adminCreateUser(btn) {
     const { error } = await sb.from('profiles').insert(row);
     if (error) throw error;
 
+    logAuditEvent('User "' + name + '" created (' + normalizedRole + ')', 'Users', 'Success');
     showToast('User "' + name + '" created successfully', 'success');
     _closeModal(btn);
     _clearFields(['newUserName','newUserEmail','newUserRole','newUserStatus','newUserPassword','newUserPasswordConfirm']);
@@ -169,6 +170,7 @@ async function adminDeleteProfile(id, name, reloadFn) {
     const { error } = await sb.from('profiles').delete().eq('id', id);
     if (error) throw error;
     showToast('"' + name + '" deleted successfully', 'success');
+    logAuditEvent('Profile "' + name + '" deleted', 'Users', 'Success');
     if (typeof window[reloadFn] === 'function') window[reloadFn]();
   } catch (e) {
     console.error('[Admin] deleteProfile:', e);
@@ -296,6 +298,7 @@ async function adminDeleteStudent(id, name, studentId) {
     const { error } = await sb.from('profiles').delete().eq('id', id);
     if (error) throw error;
     showToast('Student "' + name + '" deleted successfully', 'success');
+    logAuditEvent('Student "' + name + '" deleted', 'Students', 'Success');
     adminLoadStudents();
   } catch (e) {
     console.error('[Admin] deleteStudent:', e);
@@ -330,6 +333,7 @@ async function adminCreateStudent(btn) {
     });
     if (error) throw error;
 
+    logAuditEvent('Student "' + name + '" created', 'Students', 'Success');
     showToast('Student "' + name + '" added successfully', 'success');
     _closeModal(btn);
     _clearFields(['newStudentId','newStudentName','newStudentProgram','newStudentLevel']);
@@ -714,6 +718,7 @@ async function adminDeleteGroup(id, groupNumber) {
     const { error } = await sb.from('groups').delete().eq('id', id);
     if (error) throw error;
     showToast('Group "' + groupNumber + '" deleted successfully', 'success');
+    logAuditEvent('Group "' + groupNumber + '" deleted', 'Projects', 'Success');
     adminLoadGroups();
   } catch (e) {
     console.error('[Admin] deleteGroup:', e);
@@ -758,6 +763,7 @@ async function adminCreateGroup(btn) {
       }
     }
 
+    logAuditEvent('Group "' + groupName + '" created', 'Projects', 'Success');
     showToast('Group "' + groupName + '" created successfully', 'success');
     _closeModal(btn);
     _clearFields(['newGroupName','newGroupProject','newGroupSupervisor','newGroupStatus','newGroupMembers']);
@@ -809,6 +815,7 @@ async function adminDeleteProject(id, title) {
     const { error } = await sb.from('groups').delete().eq('id', id);
     if (error) throw error;
     showToast('Project "' + title + '" deleted successfully', 'success');
+    logAuditEvent('Project "' + title + '" deleted', 'Projects', 'Success');
     adminLoadProjects();
   } catch (e) {
     console.error('[Admin] deleteProject:', e);
@@ -846,6 +853,7 @@ async function adminCreateProject(btn) {
     });
     if (error) throw error;
 
+    logAuditEvent('Project "' + title + '" registered', 'Projects', 'Success');
     showToast('Project registered successfully', 'success');
     _closeModal(btn);
     _clearFields(['newProjTitle','newProjDesc','newProjProgram','newProjGroup','newProjSupervisor','newProjStage','newProjStatus']);
@@ -896,6 +904,7 @@ async function adminDeleteCycle(id, name) {
     const { error } = await sb.from('intakes').delete().eq('id', id);
     if (error) throw error;
     showToast('Cycle "' + name + '" deleted successfully', 'success');
+    logAuditEvent('Capstone cycle "' + name + '" deleted', 'Configuration', 'Success');
     adminLoadCycles();
   } catch (e) {
     console.error('[Admin] deleteCycle:', e);
@@ -926,6 +935,7 @@ async function adminCreateCycle(btn) {
     });
     if (error) throw error;
 
+    logAuditEvent('Capstone cycle "' + cname + '" created', 'Configuration', 'Success');
     showToast('Capstone cycle "' + cname + '" created', 'success');
     _closeModal(btn);
     _clearFields(['newCycleYear','newCycleName','newCycleStart','newCycleEnd']);
@@ -1102,6 +1112,7 @@ async function adminCreateProgram(btn) {
       } catch (err) {}
     }
 
+    logAuditEvent('Program "' + name + '" added', 'Configuration', 'Success');
     showToast('Program "' + name + '" added successfully', 'success');
     _closeModal(btn);
     _clearFields(['newProgCode', 'newProgName', 'newProgShortCode']);
@@ -1129,6 +1140,7 @@ async function adminDeleteProgram(code, name) {
     }
 
     showToast('Program "' + (name || code) + '" deleted successfully', 'success');
+    logAuditEvent('Program "' + (name || code) + '" deleted', 'Configuration', 'Success');
     adminLoadPrograms();
   } catch (e) {
     console.error('[Admin] deleteProgram:', e);
@@ -1356,6 +1368,106 @@ function adminExportReport(fmt) {
   else adminExportToExcel('reportGeneratedTable', 'administrative_report');
 }
 
+// ─── Audit Logs ─────────────────────────────────────────────
+
+function _getStoredAuditLogs() {
+  try {
+    const raw = localStorage.getItem('cms_audit_logs');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  // Seed with some initial system entries
+  const seed = [
+    { id: 'EVT-0001', activity: 'System initialized', actor: 'System', module: 'System', ts: new Date(Date.now() - 7200000).toISOString(), outcome: 'Success' },
+    { id: 'EVT-0002', activity: 'Admin logged in', actor: localStorage.getItem('cms_logged_user') || 'Administrator', module: 'Authentication', ts: new Date(Date.now() - 3600000).toISOString(), outcome: 'Success' },
+  ];
+  localStorage.setItem('cms_audit_logs', JSON.stringify(seed));
+  return seed;
+}
+
+function logAuditEvent(activity, module, outcome) {
+  outcome = outcome || 'Success';
+  const logs = _getStoredAuditLogs();
+  const nextNum = logs.length + 1;
+  const id = 'EVT-' + String(nextNum).padStart(4, '0');
+  const actor = localStorage.getItem('cms_logged_user') || 'Administrator';
+  logs.unshift({ id, activity, actor, module, ts: new Date().toISOString(), outcome });
+  // Keep at most 500 entries
+  if (logs.length > 500) logs.splice(500);
+  try { localStorage.setItem('cms_audit_logs', JSON.stringify(logs)); } catch (e) {}
+  // Re-render if we're on the audit page
+  if (document.getElementById('auditTable')) adminRenderAuditLogs(logs);
+}
+
+let _allAuditLogs = [];
+
+async function adminLoadAuditLogs() {
+  _allAuditLogs = _getStoredAuditLogs();
+  // Also pull from Supabase certificate_downloads if available
+  const sb = _sb();
+  if (sb) {
+    try {
+      const { data } = await sb.from('certificate_downloads').select('*').order('downloaded_at', { ascending: false }).limit(200);
+      if (data && data.length) {
+        const sbLogs = data.map((r, i) => ({
+          id: 'CD-' + String(i + 1).padStart(4, '0'),
+          activity: `Certificate downloaded (serial: ${r.serial || 'N/A'})`,
+          actor: r.downloaded_by || r.student_id || 'Unknown',
+          module: 'Certificates',
+          ts: r.downloaded_at || new Date().toISOString(),
+          outcome: 'Success'
+        }));
+        _allAuditLogs = [..._allAuditLogs, ...sbLogs];
+      }
+    } catch (e) { /* Supabase unavailable, local logs only */ }
+  }
+  adminRenderAuditLogs(_allAuditLogs);
+}
+
+function adminRenderAuditLogs(logs) {
+  const tbody = document.querySelector('#auditTable tbody');
+  if (!tbody) return;
+
+  const evtFilter = document.getElementById('auditEventFilter');
+  const outFilter = document.getElementById('auditOutcomeFilter');
+  const searchEl = document.querySelector('[data-filter="#auditTable"]');
+  const q = searchEl ? searchEl.value.toLowerCase() : '';
+  const evtVal = evtFilter ? evtFilter.value : '';
+  const outVal = outFilter ? outFilter.value : '';
+
+  const filtered = logs.filter(r => {
+    if (evtVal && evtVal !== 'All event types' && r.module !== evtVal) return false;
+    if (outVal && outVal !== 'All outcomes' && r.outcome !== outVal) return false;
+    if (q && !r.activity.toLowerCase().includes(q) && !r.actor.toLowerCase().includes(q) && !r.module.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const outcomeColor = { Success: 'green', Viewed: 'blue', Warning: 'amber', Error: 'red' };
+
+  tbody.innerHTML = filtered.length
+    ? filtered.map(r => {
+        const ts = r.ts ? new Date(r.ts).toLocaleString() : '';
+        const color = outcomeColor[r.outcome] || 'gray';
+        return `<tr>
+          <td style="font-family:monospace;font-size:12px">${escHtml(r.id)}</td>
+          <td>${escHtml(r.activity)}</td>
+          <td>${escHtml(r.actor)}</td>
+          <td>${escHtml(r.module)}</td>
+          <td style="font-size:12px;color:var(--muted)">${ts}</td>
+          <td>${_badge(r.outcome, color)}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No audit log entries found.</td></tr>`;
+
+  const countEl = document.querySelector('.pagination span');
+  if (countEl) countEl.textContent = `Showing ${filtered.length} of ${logs.length} records`;
+}
+
+function adminFilterAuditLogs() {
+  adminRenderAuditLogs(_allAuditLogs);
+}
+
+// ─── DOMContentLoaded ────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', function () {
   // Determine which page we're on by checking for known table IDs
   if (document.getElementById('usersTable'))    adminLoadUsers();
@@ -1365,5 +1477,14 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('projectTable'))  adminLoadProjects();
   if (document.getElementById('cycleTable'))    adminLoadCycles();
   if (document.getElementById('programTable'))  adminLoadPrograms();
+  if (document.getElementById('auditTable'))    adminLoadAuditLogs();
   if (window.location.pathname.includes('reports.html')) adminLoadReportStats();
+
+  // Wire audit log filters
+  const evtFilter = document.getElementById('auditEventFilter');
+  const outFilter = document.getElementById('auditOutcomeFilter');
+  const searchEl = document.querySelector('[data-filter="#auditTable"]');
+  if (evtFilter) evtFilter.addEventListener('change', adminFilterAuditLogs);
+  if (outFilter) outFilter.addEventListener('change', adminFilterAuditLogs);
+  if (searchEl) searchEl.addEventListener('input', adminFilterAuditLogs);
 });

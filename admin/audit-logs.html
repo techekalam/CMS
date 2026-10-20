@@ -80,10 +80,16 @@
 </aside>
 <main class="main">
     <section class="page">
-    <div class="page-head"><div><h2>Audit Logs</h2><p>Review important system activities and changes for accountability, security, and traceability.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#auditTable" placeholder="Search audit activity..."><select class="field"><option>All event types</option><option>Authentication</option><option>Users</option><option>Students</option><option>Projects</option><option>Configuration</option></select><select class="field"><option>All outcomes</option><option>Success</option><option>Viewed</option><option>Warning</option></select><button class="btn" onclick="showToast('Exporting audit logs...','info')">Export Logs</button></div><div class="card"><div class="table-wrap"><table id="auditTable"><thead><tr><th>Event ID</th><th>Activity</th><th>Actor</th><th>Module</th><th>Timestamp</th><th>Outcome</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div></section>
+    <div class="page-head"><div><h2>Audit Logs</h2><p>Review important system activities and changes for accountability, security, and traceability.</p></div><div class="actions"></div></div><div class="toolbar"><input class="field search" data-filter="#auditTable" placeholder="Search audit activity..."><select class="field" id="auditEventFilter"><option>All event types</option><option>Authentication</option><option>Users</option><option>Students</option><option>Projects</option><option>Configuration</option><option>Certificates</option><option>System</option></select><select class="field" id="auditOutcomeFilter"><option>All outcomes</option><option>Success</option><option>Viewed</option><option>Warning</option><option>Error</option></select><button class="btn" onclick="adminExportToExcel('auditTable','audit_logs')">Export Logs</button></div><div class="card"><div class="table-wrap"><table id="auditTable"><thead><tr><th>Event ID</th><th>Activity</th><th>Actor</th><th>Module</th><th>Timestamp</th><th>Outcome</th></tr></thead><tbody></tbody></table></div><div class="pagination"><span>Showing 0 of 0 records</span><div class="pager"><button>‹</button><button class="current">1</button><button>›</button></div></div></div></section>
 </main>
 </div>
 <script src="assets/admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="assets/admin-api.js?v=3"></script>
 </body>
 </html>
 
