@@ -143,11 +143,8 @@ function renderBoard(){
   const list = (b.entries||[]).filter(r => !q || [r.name,r.studentId,r.course,r.group,r.project].some(v=>(v||'').toLowerCase().includes(q)))
     .sort((a,c)=>a.name.localeCompare(c.name));
   document.getElementById('boardRows').innerHTML = list.map(r => `
-    <tr><td><b>${esc(r.name)}</b><div class="note" style="margin:2px 0 0">${esc(r.studentId||'No ID')}</div></td><td>${esc(r.course)}</td><td>${esc(r.group||'—')}</td><td>${esc(r.project||'—')}</td><td>${r.mark}/100</td>
-      <td style="text-align:right"><div class="actions" style="justify-content:flex-end">
-        <button class="btn-primary" onclick="openRecord('${r.id}')">Edit</button>
-        <button class="btn-err" onclick="confirmDeleteRecord('${r.id}')">Delete</button></div></td></tr>
-  `).join('') || `<tr><td colspan="6" style="color:var(--muted)">${(b.entries||[]).length ? 'No records match.' : 'No records yet. Click "+ Add Record".'}</td></tr>`;
+    <tr><td><b>${esc(r.name)}</b><div class="note" style="margin:2px 0 0">${esc(r.studentId||'No ID')}</div></td><td>${esc(r.course)}</td><td>${esc(r.group||'—')}</td><td>${esc(r.project||'—')}</td><td><b>${r.mark}/100</b></td></tr>
+  `).join('') || `<tr><td colspan="5" style="color:var(--muted)">${(b.entries||[]).length ? 'No records match.' : 'No records yet.'}</td></tr>`;
 }
 const boardSearchEl = document.getElementById('boardSearch');
 if(boardSearchEl) boardSearchEl.addEventListener('input', renderBoard);
