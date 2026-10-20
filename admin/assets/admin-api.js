@@ -1401,25 +1401,166 @@ function logAuditEvent(activity, module, outcome) {
 let _allAuditLogs = [];
 
 async function adminLoadAuditLogs() {
-  _allAuditLogs = _getStoredAuditLogs();
-  // Also pull from Supabase certificate_downloads if available
+  const localLogs = _getStoredAuditLogs();
   const sb = _sb();
+  const items = [...localLogs];
+
   if (sb) {
     try {
-      const { data } = await sb.from('certificate_downloads').select('*').order('downloaded_at', { ascending: false }).limit(200);
-      if (data && data.length) {
-        const sbLogs = data.map((r, i) => ({
-          id: 'CD-' + String(i + 1).padStart(4, '0'),
-          activity: `Certificate downloaded (serial: ${r.serial || 'N/A'})`,
-          actor: r.downloaded_by || r.student_id || 'Unknown',
-          module: 'Certificates',
-          ts: r.downloaded_at || new Date().toISOString(),
-          outcome: 'Success'
-        }));
-        _allAuditLogs = [..._allAuditLogs, ...sbLogs];
+      const [rNotifs, rDocs, rDefs, rCerts, rCertDls, rGroups, rProfiles, rMarks] = await Promise.all([
+        sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(150),
+        sb.from('documents').select('*').order('uploaded_at', { ascending: false }).limit(100),
+        sb.from('defenses').select('*').order('created_at', { ascending: false }).limit(100),
+        sb.from('certificates').select('*').order('issued_at', { ascending: false }).limit(100),
+        sb.from('certificate_downloads').select('*').order('downloaded_at', { ascending: false }).limit(100),
+        sb.from('groups').select('*').order('created_at', { ascending: false }).limit(100),
+        sb.from('profiles').select('*').order('created_at', { ascending: false }).limit(100),
+        sb.from('marks').select('*').limit(100)
+      ]);
+
+      // 1. Notifications activity
+      if (rNotifs?.data) {
+        rNotifs.data.forEach(n => {
+          let outcome = 'Success';
+          const t = (n.title || '').toLowerCase();
+          if (t.includes('revision') || t.includes('returned') || n.type === 'warning') outcome = 'Warning';
+          else if (t.includes('reject') || t.includes('decline') || n.type === 'error') outcome = 'Error';
+
+          let mod = 'System';
+          if (t.includes('defense') || t.includes('student')) mod = 'Students';
+          else if (t.includes('document') || t.includes('topic') || t.includes('project') || t.includes('marks')) mod = 'Projects';
+          else if (t.includes('certificate')) mod = 'Certificates';
+
+          let actor = n.recipient_email || 'System';
+          const m = (n.message || '').match(/^(Supervisor\s+[^:\s]+|Student\s+[^:\s]+|Hi\s+[^,\s]+)/i);
+          if (m && m[1]) actor = m[1];
+
+          items.push({
+            activity: n.title ? (n.title + ' — ' + (n.message || '').slice(0, 130)) : (n.message || 'System Notification'),
+            actor: actor,
+            module: mod,
+            ts: n.created_at || new Date().toISOString(),
+            outcome
+          });
+        });
       }
-    } catch (e) { /* Supabase unavailable, local logs only */ }
+
+      // 2. Document upload & review activity
+      if (rDocs?.data) {
+        rDocs.data.forEach(d => {
+          if (d.uploaded_at) {
+            items.push({
+              activity: `Uploaded deliverable: "${d.file_name}" (${d.document_type || 'PROPOSAL'})`,
+              actor: d.student_id || 'Student',
+              module: 'Projects',
+              ts: d.uploaded_at,
+              outcome: 'Success'
+            });
+          }
+          if (d.reviewed_at) {
+            const isRej = (d.supervisor_comments || '').toUpperCase().includes('[REJECTED]');
+            items.push({
+              activity: `Reviewed deliverable: "${d.file_name}" (${isRej ? 'Changes Requested' : 'Approved'})`,
+              actor: 'Faculty Supervisor',
+              module: 'Projects',
+              ts: d.reviewed_at,
+              outcome: isRej ? 'Warning' : 'Success'
+            });
+          }
+        });
+      }
+
+      // 3. Oral Defenses
+      if (rDefs?.data) {
+        rDefs.data.forEach(d => {
+          items.push({
+            activity: `Oral defense ${d.status === 'PENDING' ? 'requested' : d.status.toLowerCase()} for ${d.student_name || d.student_id} (${d.group_number || ''})`,
+            actor: d.student_name || d.student_id || 'Student',
+            module: 'Students',
+            ts: d.created_at || d.submitted_date || new Date().toISOString(),
+            outcome: 'Success'
+          });
+        });
+      }
+
+      // 4. Groups & Topics
+      if (rGroups?.data) {
+        rGroups.data.forEach(g => {
+          items.push({
+            activity: `Capstone group ${g.group_number} (${g.project_title || 'Topic Registration'}): Status is ${g.status || 'IN_PROGRESS'}${g.mark != null ? ' (Mark: ' + g.mark + '/100)' : ''}`,
+            actor: g.supervisor_name || 'Coordinator',
+            module: 'Projects',
+            ts: g.created_at || new Date().toISOString(),
+            outcome: g.status === 'COMPLETE' ? 'Success' : 'Viewed'
+          });
+        });
+      }
+
+      // 5. Certificates Issued
+      if (rCerts?.data) {
+        rCerts.data.forEach(c => {
+          items.push({
+            activity: `Capstone completion certificate issued for ${c.student_name} (${c.serial}, Score: ${c.score}/100)`,
+            actor: 'Coordinator',
+            module: 'Certificates',
+            ts: c.issued_at || c.created_at || new Date().toISOString(),
+            outcome: 'Success'
+          });
+        });
+      }
+
+      // 6. Certificate Downloads
+      if (rCertDls?.data) {
+        rCertDls.data.forEach(cd => {
+          items.push({
+            activity: `Certificate downloaded (serial: ${cd.serial || 'N/A'})`,
+            actor: cd.downloaded_by || cd.student_id || 'Student',
+            module: 'Certificates',
+            ts: cd.downloaded_at || new Date().toISOString(),
+            outcome: 'Viewed'
+          });
+        });
+      }
+
+      // 7. Marks & Evaluations
+      if (rMarks?.data) {
+        rMarks.data.forEach(m => {
+          items.push({
+            activity: `Assessment marks recorded for ${m.student_name || m.student_id} (${m.total}/100) by ${m.supervisor_name || 'Supervisor'}`,
+            actor: m.supervisor_name || 'Supervisor',
+            module: 'Projects',
+            ts: m.created_at || new Date().toISOString(),
+            outcome: 'Success'
+          });
+        });
+      }
+
+      // 8. User registrations
+      if (rProfiles?.data) {
+        rProfiles.data.forEach(p => {
+          items.push({
+            activity: `User account registered: ${p.name || p.email} (Role: ${p.role || 'student'})`,
+            actor: p.email || 'System',
+            module: 'Users',
+            ts: p.created_at || new Date().toISOString(),
+            outcome: 'Success'
+          });
+        });
+      }
+    } catch(err) {
+      console.warn('Audit logs Supabase fetch notice:', err);
+    }
   }
+
+  // Sort newest first
+  items.sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0));
+
+  // Assign sequential Event IDs
+  _allAuditLogs = items.map((r, i) => ({
+    ...r,
+    id: 'EVT-' + String(i + 1).padStart(4, '0')
+  }));
+
   adminRenderAuditLogs(_allAuditLogs);
 }
 
