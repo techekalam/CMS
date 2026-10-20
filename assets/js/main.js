@@ -493,25 +493,27 @@ async function loadStudentDocuments(sb, studentId, groupId) {
         if (groupId) filters.push(`group_id.eq.${groupId}`);
         if (email && email !== sId) filters.push(`student_id.eq.${email}`);
 
-        // Fetch notifications to see if there are revision requests for documents
-        window._cachedRevisionDocIds = new Set();
+        // Fetch recent document review notifications to check the latest action per document
+        // Map from document filename to latest action: 'approved' | 'rejected'
+        const notifDocStatusMap = {};
         try {
-            const { data: revNotifs } = await sb.from('notifications')
-                .select('title, message')
-                .ilike('title', '%revision%')
+            const { data: reviewNotifs } = await sb.from('notifications')
+                .select('title, message, created_at')
+                .or('title.ilike.%Document Approved%,title.ilike.%Document Revision Requested%')
                 .order('created_at', { ascending: false })
-                .limit(50);
-            if (revNotifs) {
-                revNotifs.forEach(n => {
+                .limit(100);
+
+            if (reviewNotifs) {
+                reviewNotifs.forEach(n => {
                     const msg = (n.message || '');
-                    // Extracts filename if format is: reviewed "filename":
                     const m = msg.match(/reviewed\s+"([^"]+)"/i);
                     if (m && m[1]) {
-                        window._cachedRevisionDocIds.add(m[1]);
-                        window._cachedRevisionDocIds.add(m[1].toLowerCase().trim());
-                    }
-                    if (msg) {
-                        window._cachedRevisionDocIds.add(msg.toLowerCase());
+                        const fname = m[1].toLowerCase().trim();
+                        // Only set if not already set by a newer notification
+                        if (!notifDocStatusMap[fname]) {
+                            const isRej = (n.title || '').toLowerCase().includes('revision') || (n.title || '').toLowerCase().includes('reject');
+                            notifDocStatusMap[fname] = isRej ? 'rejected' : 'approved';
+                        }
                     }
                 });
             }
@@ -560,34 +562,34 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                                 : '—';
                             const isReviewed = !!d.reviewed_at;
 
-                            // Resolve status reliably across all devices and historical entries
+                            // Resolve status cleanly and accurately
                             let docStatus = d.status || null;
-                            const commentText = (d.supervisor_comments || '').toLowerCase();
-                            
+                            const commentText = (d.supervisor_comments || '').trim();
+                            const lowerComment = commentText.toLowerCase();
+                            const fnameKey = (d.file_name || '').toLowerCase().trim();
+
                             if (!docStatus && isReviewed) {
-                                if (d.id in localApprovals) {
-                                    docStatus = localApprovals[d.id] ? 'approved' : 'rejected';
-                                } else if (commentText.includes('[rejected]') || commentText.includes('reject') || commentText.includes('revis') || commentText.includes('changes requested')) {
+                                // 1. Direct explicit tags saved in supervisor comments
+                                if (commentText.startsWith('[REJECTED]') || lowerComment.includes('[rejected]')) {
                                     docStatus = 'rejected';
-                                } else if (commentText.includes('[approved]') || commentText.includes('approv')) {
+                                } else if (commentText.startsWith('[APPROVED]') || lowerComment.includes('[approved]')) {
+                                    docStatus = 'approved';
+                                } 
+                                // 2. Check local supervisor machine cache
+                                else if (d.id in localApprovals) {
+                                    docStatus = localApprovals[d.id] ? 'approved' : 'rejected';
+                                }
+                                // 3. Check notifications specifically for this exact document name
+                                else if (fnameKey && notifDocStatusMap[fnameKey]) {
+                                    docStatus = notifDocStatusMap[fnameKey];
+                                }
+                                // 4. Natural language cues in comments
+                                else if (lowerComment.includes('reject') || lowerComment.includes('revis') || lowerComment.includes('try again') || lowerComment.includes('not good') || lowerComment.includes('changes requested')) {
+                                    docStatus = 'rejected';
+                                } else if (lowerComment.includes('approv') || lowerComment.includes('great') || lowerComment.includes('good') || lowerComment.includes('well done') || lowerComment.includes('excellent')) {
                                     docStatus = 'approved';
                                 } else {
-                                    // Check if there is an associated revision request in notifications
-                                    const safeName = (d.file_name || '').trim().toLowerCase();
-                                    let hasRev = false;
-                                    if (window._cachedRevisionDocIds) {
-                                        if (window._cachedRevisionDocIds.has(d.file_name) || window._cachedRevisionDocIds.has(safeName)) {
-                                            hasRev = true;
-                                        } else {
-                                            for (let item of window._cachedRevisionDocIds) {
-                                                if (item && safeName && item.includes(safeName)) {
-                                                    hasRev = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    docStatus = hasRev ? 'rejected' : 'approved';
+                                    docStatus = 'approved';
                                 }
                             }
 
