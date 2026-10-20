@@ -433,6 +433,9 @@ async function initDashboardTracker() {
             if (marks) {
                 pill3Val.textContent = `Completed (${marks.total}/100)`;
                 pill3Val.style.color = '#15803d';
+            } else if (stStatus && stStatus.defense_status === 'APPROVED') {
+                pill3Val.textContent = 'Defense Approved';
+                pill3Val.style.color = '#15803d';
             } else if (stStatus && stStatus.defense_status === 'SCHEDULED') {
                 pill3Val.textContent = `Defense: ${stStatus.defense_date || 'Scheduled'}`;
                 pill3Val.style.color = '#d97706';
@@ -453,7 +456,7 @@ async function initDashboardTracker() {
     if (completedSteps >= 2 && hasApprovedDoc) completedSteps = 3;
     // Also advance step 3 if defense is scheduled (legacy path)
     if (stStatus && (stStatus.defense_status === 'SCHEDULED' || stStatus.defense_status === 'PENDING_COORDINATOR_REVIEW')) completedSteps = 3;
-    if (marks || (stStatus && stStatus.completion_percentage === 100)) completedSteps = 4;
+    if (marks || (stStatus && (stStatus.completion_percentage === 100 || stStatus.defense_status === 'APPROVED'))) completedSteps = 4;
 
     const calculatedPct = Math.round((completedSteps / 4) * 100);
 
@@ -507,11 +510,23 @@ async function initDashboardTracker() {
         const s4 = stepItems[3].querySelector('.step-status');
         if (s4) {
             if (marks) {
-                s4.className = 'step-status approved'; s4.textContent = `Graded (${marks.total}/100)`;
+                s4.className = 'step-status approved';
+                s4.textContent = `Graded (${marks.total}/100)`;
+            } else if (stStatus && stStatus.defense_status === 'APPROVED') {
+                s4.className = 'step-status approved';
+                s4.textContent = 'Defense Approved';
             } else if (stStatus && stStatus.defense_status === 'SCHEDULED') {
-                s4.className = 'step-status pending'; s4.textContent = `Scheduled: ${stStatus.defense_date || ''}`;
+                s4.className = 'step-status pending';
+                s4.textContent = `Scheduled: ${stStatus.defense_date || ''}`;
+            } else if (stStatus && stStatus.defense_status === 'REQUESTED') {
+                s4.className = 'step-status pending';
+                s4.textContent = `Requested: ${stStatus.defense_date || ''}`;
+            } else if (stStatus && stStatus.defense_status === 'PENDING_COORDINATOR_REVIEW') {
+                s4.className = 'step-status pending';
+                s4.textContent = 'Panel Review Pending';
             } else {
-                s4.className = 'step-status pending'; s4.textContent = 'Awaiting Panel';
+                s4.className = 'step-status pending';
+                s4.textContent = 'Awaiting Panel';
             }
         }
     }

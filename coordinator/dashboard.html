@@ -251,8 +251,7 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
     <div class="item" data-view="groups" onclick="navigate('groups')">Groups & Supervisors</div>
     <div class="item" data-view="students" onclick="navigate('students')">Student Status</div>
     <div class="item" data-view="defenses" onclick="navigate('defenses')">Pending Defenses</div>
-    <div class="item" data-view="marks" onclick="navigate('marks')">Marks Approval</div>
-    <div class="item" data-view="legacy" onclick="navigate('legacy')">Legacy Boards</div>
+        <div class="item" data-view="legacy" onclick="navigate('legacy')">Legacy Boards</div>
     <div class="item" data-view="certs" onclick="navigate('certs')">Certificates</div>
     <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
       <a href="../login.html" style="color:#ef4444; text-decoration:none; display:block; padding:10px 12px; border-radius:8px; font-size:13px; font-weight:600;">Logout</a>
@@ -280,11 +279,7 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
           <p>Awaiting coordinator review.</p>
           <div class="count" id="cardDefenses">0</div>
         </div>
-        <div class="dash-card" onclick="navigate('marks')"><h3>Marks Approval</h3>
-          <p>Supervisor-submitted marks awaiting sign-off.</p>
-          <div class="count" id="cardMarks">0</div>
-        </div>
-        <div class="dash-card" onclick="navigate('legacy')"><h3>Legacy Boards</h3>
+                <div class="dash-card" onclick="navigate('legacy')"><h3>Legacy Boards</h3>
           <p>Historical / manually-entered assessment boards.</p>
           <div class="count" id="cardLegacy">0</div>
         </div>
@@ -347,19 +342,7 @@ body.student-mode .side,body.student-mode .overlay,body.student-mode .hamburger,
       </div>
     </div>
 
-    <!-- MARKS APPROVAL -->
-    <div class="view" id="view-marks">
-      <div class="header"><h2>Marks Approval</h2></div>
-      <div id="banner-marks"></div>
-      <div class="card" style="overflow-x:auto">
-        <table>
-          <thead><tr><th>Student</th><th>Group</th><th>Supervisor</th><th>Total</th><th style="text-align:right">Action</th></tr></thead>
-          <tbody id="markRows"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- LEGACY BOARDS -->
+        <!-- LEGACY BOARDS -->
     <div class="view" id="view-legacy">
       <div class="header"><h2>Legacy Boards</h2>
         <button class="btn-primary" onclick="openNewBoard()">+ New Board</button></div>

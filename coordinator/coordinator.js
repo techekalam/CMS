@@ -70,7 +70,7 @@ function renderDefenses(){
 async function reviewDefense(id, approve){
   const dd = defenses.find(d=>d.id===id); if(dd) decisions.defense[dd.student] = approve ? 'APPROVED' : 'REJECTED';
   defenses = defenses.filter(d=>d.id!==id);
-  if(sb) await sb.from('student_status').update({defense_status: approve?'APPROVED':'REJECTED'}).eq('student_id', dd ? dd.studentId || id : id);
+  if(sb) await sb.from('student_status').update({defense_status: approve?'APPROVED':'REJECTED', completion_percentage: approve?100:75}).eq('student_id', dd ? dd.studentId || id : id);
   // Notify student by email
   if(dd && dd.studentId){
     const email = await getEmailByStudentId(dd.studentId);

@@ -957,7 +957,21 @@ async function submitGrade(id){
   const vals = ['mTitle','mProblem','mObj','mTools','mDesign'].map(k=>Number(document.getElementById(k).value)||0);
   const comment = document.getElementById('mComment').value;
   const s = students.find(x=>x.id===id);
-  if(s) s.graded = true;
+  if(s) {
+    s.graded = true;
+    s.completion = 100;
+    s.defenseStatus = 'APPROVED';
+  }
+  if(sb) {
+    try {
+      await sb.from('student_status').upsert({
+        student_id: id,
+        group_id: s?.groupId || null,
+        defense_status: 'APPROVED',
+        completion_percentage: 100
+      });
+    } catch(_) {}
+  }
   const total = vals.reduce((a,b)=>a+b, 0);
   if(sb) {
     try {
@@ -974,7 +988,7 @@ async function submitGrade(id){
         design_marks: vals[4],
         total: total,
         comments: comment,
-        is_approved: false
+        is_approved: true
       });
       const recipient = s?.reg ? s.reg + '@student.cavendish.ac.ug' : id;
       await sb.from('notifications').insert({
