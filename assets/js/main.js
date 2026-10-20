@@ -470,9 +470,20 @@ async function loadStudentDocuments(sb, studentId, groupId) {
                         ${docs.map(d => {
                             const dateStr = d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '—';
                             const isReviewed = !!d.reviewed_at;
-                            const statusBadge = isReviewed
-                                ? '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Reviewed / Approved</span>'
-                                : '<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending Review</span>';
+                            // Determine approval: prefer DB status column, then localStorage written by supervisor portal
+                            let docStatus = d.status || null;
+                            if (!docStatus && isReviewed) {
+                                try {
+                                    const approvals = JSON.parse(localStorage.getItem('cms_doc_approvals') || '{}');
+                                    if (d.id in approvals) docStatus = approvals[d.id] ? 'approved' : 'rejected';
+                                    else docStatus = 'approved'; // legacy: if reviewed_at set but no record, assume approved
+                                } catch(_) { docStatus = 'approved'; }
+                            }
+                            const statusBadge = !isReviewed
+                                ? '<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">Pending Review</span>'
+                                : docStatus === 'rejected'
+                                    ? '<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">❌ Rejected / Changes Requested</span>'
+                                    : '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">✅ Approved</span>';
                             const typeLabel = (d.document_type || 'DELIVERABLE').replace(/_/g, ' ');
                             return `
                                 <tr style="border-bottom:1px solid #e2e8f0;">
