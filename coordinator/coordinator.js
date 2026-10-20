@@ -628,8 +628,7 @@ function renderGroups(){
         <td>${g.mark==null ? '—' : g.mark+'/100'}</td>
         <td>${g.status==='COMPLETE' ? badge('Complete','ok') : badge('In Progress','warn')}</td>
         <td style="text-align:right"><div class="actions" style="justify-content:flex-end">
-          <button class="btn-ok" onclick="openMark('${g.id}')">Mark &amp; Status</button>
-          <button class="btn-primary" onclick="openAssign('${g.id}')">${g.supervisor?'Reassign':'Assign'} Supervisor</button></div></td></tr>
+          <button class="btn-ok" onclick="openMark('${g.id}')">Mark &amp; Status</button></div></td></tr>
     `).join('') || `<tr><td colspan="7" style="color:var(--muted)">No groups match.</td></tr>`;
   }
   const cardGroupsEl = document.getElementById('cardGroups');
