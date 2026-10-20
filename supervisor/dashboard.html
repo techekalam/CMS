@@ -712,14 +712,23 @@ function openDocReview(id){
       <button class="btn-ok" onclick="setDocStatus('${id}', true)">Approve</button>
     </div>`);
 }
+function _getDocApproval(id) {
+  try { const s = localStorage.getItem('cms_doc_approvals'); return s ? JSON.parse(s)[id] === true : false; } catch(_){ return false; }
+}
+function _setDocApproval(id, approved) {
+  try { const s = localStorage.getItem('cms_doc_approvals'); const m = s ? JSON.parse(s) : {}; m[id] = approved; localStorage.setItem('cms_doc_approvals', JSON.stringify(m)); } catch(_){}
+}
 async function setDocStatus(id, approved){
   const d = documents.find(x=>x.id===id);
   d.comments = document.getElementById('docComment').value;
   d.reviewed = true;
   d.approved = approved;
+  _setDocApproval(id, approved);
   if(sb) {
     try {
-      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString(), status: approved ? 'approved' : 'rejected'}).eq('id', id);
+      await sb.from('documents').update({supervisor_comments:d.comments, reviewed_at:new Date().toISOString()}).eq('id', id);
+      // Try writing status column (only works if column exists in DB)
+      try { await sb.from('documents').update({status: approved ? 'approved' : 'rejected'}).eq('id', id); } catch(_) {}
       const st = students.find(s => s.id === d.studentId || s.name === d.student || s.reg === d.studentId);
       const recipient = st ? (st.reg ? st.reg + '@student.cavendish.ac.ug' : d.studentId) : d.studentId;
       await sb.from('notifications').insert({
@@ -941,7 +950,7 @@ async function loadData(){
     // 4. Fetch documents for review
     const { data: docData, error: docErr } = await sb
       .from('documents')
-      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at, status')
+      .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
       .order('uploaded_at', { ascending: false });
     if(!docErr && docData && docData.length > 0){
       documents = docData.map(d => {
@@ -955,7 +964,7 @@ async function loadData(){
           type: d.document_type || 'PROPOSAL',
           comments: d.supervisor_comments || '',
           reviewed: !!d.reviewed_at,
-          approved: d.status === 'approved',
+          approved: _getDocApproval(d.id),
           url: d.file_url || '#'
         };
       });
@@ -967,7 +976,7 @@ async function loadData(){
         .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, async () => {
           const { data: refreshed } = await sb
             .from('documents')
-            .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at, status')
+            .select('id, student_id, group_id, file_name, file_url, document_type, supervisor_comments, reviewed_at, uploaded_at')
             .order('uploaded_at', { ascending: false });
           if (refreshed) {
             documents = refreshed.map(d => {
@@ -981,6 +990,7 @@ async function loadData(){
                 type: d.document_type || 'PROPOSAL',
                 comments: d.supervisor_comments || '',
                 reviewed: !!d.reviewed_at,
+                approved: _getDocApproval(d.id),
                 url: d.file_url || '#'
               };
             });
